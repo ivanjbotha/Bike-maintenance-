@@ -1,59 +1,71 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+import { useEffect } from 'react';
+import { useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PaperProvider } from 'react-native-paper';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SQLiteProvider } from 'expo-sqlite';
+import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { openDatabaseSync } from 'expo-sqlite';
+import migrations from '../src/db/migrations/migrations';
+import { lightTheme, darkTheme } from '../src/constants/theme';
 
-import { useColorScheme } from '@/components/useColorScheme';
-
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+export { ErrorBoundary } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
-  });
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, staleTime: 30000 } },
+});
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+function MigrationRunner({ children }: { children: React.ReactNode }) {
+  const expo = openDatabaseSync('bikeservice.db');
+  const db = drizzle(expo);
+  const { success, error } = useMigrations(db, migrations);
 
   useEffect(() => {
-    if (loaded) {
+    if (success || error) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [success, error]);
 
-  if (!loaded) {
-    return null;
-  }
-
-  return <RootLayoutNav />;
+  if (!success && !error) return null;
+  return <>{children}</>;
 }
 
-function RootLayoutNav() {
+export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SQLiteProvider databaseName="bikeservice.db">
+        <QueryClientProvider client={queryClient}>
+          <PaperProvider theme={theme}>
+            <MigrationRunner>
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="bike/new" options={{ title: 'Add Bike', presentation: 'modal' }} />
+                <Stack.Screen name="bike/[id]" options={{ title: 'Bike Details' }} />
+                <Stack.Screen name="bike/edit/[id]" options={{ title: 'Edit Bike', presentation: 'modal' }} />
+                <Stack.Screen name="part/new" options={{ title: 'Add Part', presentation: 'modal' }} />
+                <Stack.Screen name="part/[id]" options={{ title: 'Part Details' }} />
+                <Stack.Screen name="part/edit/[id]" options={{ title: 'Edit Part', presentation: 'modal' }} />
+                <Stack.Screen name="ride/log" options={{ title: 'Log Ride', presentation: 'modal' }} />
+                <Stack.Screen name="ride/[id]" options={{ title: 'Ride Details' }} />
+                <Stack.Screen name="shop/[id]" options={{ title: 'Shop Details' }} />
+                <Stack.Screen name="strava/connect" options={{ title: 'Connect Strava', presentation: 'modal' }} />
+              </Stack>
+            </MigrationRunner>
+          </PaperProvider>
+        </QueryClientProvider>
+      </SQLiteProvider>
+    </GestureHandlerRootView>
   );
 }
