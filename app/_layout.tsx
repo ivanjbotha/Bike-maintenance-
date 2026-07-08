@@ -42,7 +42,12 @@ function DatabaseGate({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    boot(initDb);
+    // Escape hatch for a corrupted local database: opening the app at
+    // /?reset-local-data=1 wipes local data before booting, for users whose
+    // error screen never renders or who are following support instructions.
+    const wantsReset =
+      typeof window !== 'undefined' && window.location?.search?.includes('reset-local-data');
+    boot(wantsReset ? resetLocalDatabase : initDb);
   }, []);
 
   if (error) {
