@@ -13,6 +13,7 @@ export default function NewPartScreen() {
 
   const [selectedPreset, setSelectedPreset] = useState<PartPreset | null>(null);
   const [customName, setCustomName] = useState('');
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [svcKm, setSvcKm] = useState('');
   const [repKm, setRepKm] = useState('');
   const [svcDays, setSvcDays] = useState('');
@@ -41,7 +42,13 @@ export default function NewPartScreen() {
       },
       {
         onSuccess: () => router.back(),
-        onError: (e: any) => Alert.alert('Could not add part', e?.message ?? 'Something went wrong. Please try again.'),
+        onError: (e: any) => {
+          // Alert.alert is a no-op on web, so surface the error inline as well.
+          console.error('Add part failed:', e);
+          const msg = e?.message ?? 'Something went wrong. Please try again.';
+          setSaveError(msg);
+          Alert.alert('Could not add part', msg);
+        },
       }
     );
   }
@@ -68,6 +75,11 @@ export default function NewPartScreen() {
       <TextInput mode="outlined" label="Service interval (days)" value={svcDays} onChangeText={setSvcDays} keyboardType="number-pad" style={styles.input} />
       <TextInput mode="outlined" label="Replace interval (days)" value={repDays} onChangeText={setRepDays} keyboardType="number-pad" style={styles.input} />
 
+      {saveError && (
+        <Text variant="bodyMedium" style={{ color: '#ef4444', marginTop: 8 }}>
+          Could not add part: {saveError}
+        </Text>
+      )}
       <Button mode="contained" onPress={handleSave} loading={isPending} icon="check" style={styles.btn}>
         Add Part
       </Button>

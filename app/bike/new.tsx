@@ -27,6 +27,7 @@ export default function NewBikeScreen() {
   const [model, setModel] = useState('');
   const [bikeType, setBikeType] = useState<BikeType>('road');
   const [odometerStr, setOdometerStr] = useState('0');
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [selectedPresets, setSelectedPresets] = useState<Set<string>>(
     new Set(PART_PRESETS.slice(0, 6).map((p) => p.name))
   );
@@ -62,7 +63,11 @@ export default function NewBikeScreen() {
 
       router.replace('/');
     } catch (e: any) {
-      Alert.alert('Could not create bike', e?.message ?? 'Something went wrong. Please try again.');
+      // Alert.alert is a no-op on web, so surface the error inline as well.
+      console.error('Create bike failed:', e);
+      const msg = e?.message ?? 'Something went wrong. Please try again.';
+      setSaveError(msg);
+      Alert.alert('Could not create bike', msg);
     }
   }
 
@@ -127,6 +132,11 @@ export default function NewBikeScreen() {
             </View>
           ))}
           <Divider style={styles.divider} />
+          {saveError && (
+            <Text variant="bodyMedium" style={{ color: '#ef4444' }}>
+              Could not create bike: {saveError}
+            </Text>
+          )}
           <View style={styles.rowBtns}>
             <Button mode="outlined" onPress={() => setStep(1)} style={{ flex: 1 }}>Back</Button>
             <Button mode="contained" onPress={handleFinish} loading={creatingBike} style={{ flex: 1 }} icon="check">
