@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { View, StyleSheet, FlatList, Linking, Alert } from 'react-native';
 import { Text, Surface, Button, ActivityIndicator, useTheme, Chip } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { router } from 'expo-router';
 import { useNearbyShops } from '../../src/hooks/useNearbyShops';
 import { EmptyState } from '../../src/components/common/EmptyState';
+import { ShopMap } from '../../src/components/shops/ShopMap';
 
 export default function ShopsScreen() {
   const theme = useTheme();
@@ -50,19 +50,12 @@ export default function ShopsScreen() {
       ) : (
         <View style={{ flex: 1 }}>
           {region && (
-            <MapView style={styles.map} region={region} provider={PROVIDER_DEFAULT} showsUserLocation>
-              {shops.map((shop) => (
-                <Marker
-                  key={shop.id}
-                  coordinate={{ latitude: shop.lat, longitude: shop.lon }}
-                  title={shop.name}
-                  description={shop.address ?? undefined}
-                  onCalloutPress={() => router.push(`/shop/${shop.id}`)}
-                >
-                  <MaterialCommunityIcons name="bike" size={28} color={theme.colors.primary} />
-                </Marker>
-              ))}
-            </MapView>
+            <ShopMap
+              region={region}
+              shops={shops}
+              color={theme.colors.primary}
+              onMarkerPress={(shopId) => router.push(`/shop/${shopId}`)}
+            />
           )}
 
           <FlatList
@@ -101,7 +94,6 @@ export default function ShopsScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  map: { flex: 1 },
   shopList: { maxHeight: 140, position: 'absolute', bottom: 0, left: 0, right: 0 },
   shopListContent: { padding: 10, gap: 10 },
   shopCard: { width: 180, padding: 14, borderRadius: 12 },
