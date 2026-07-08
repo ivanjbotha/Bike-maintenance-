@@ -40,26 +40,30 @@ export default function NewBikeScreen() {
   }
 
   async function handleFinish() {
-    const totalKm = parseFloat(odometerStr) || 0;
-    const bike = await createBike({ name, brand, model, type: bikeType, totalKm });
-    const createPart = async (preset: PartPreset) => {
-      const { createPart: cp } = await import('../../src/db/queries/parts');
-      await cp({
-        bikeId: bike.id,
-        name: preset.name,
-        category: preset.category,
-        serviceIntervalKm: preset.serviceIntervalKm,
-        replaceIntervalKm: preset.replaceIntervalKm,
-        serviceIntervalDays: preset.serviceIntervalDays,
-        replaceIntervalDays: preset.replaceIntervalDays,
-        installKm: totalKm,
-      });
-    };
+    try {
+      const totalKm = parseFloat(odometerStr) || 0;
+      const bike = await createBike({ name, brand, model, type: bikeType, totalKm });
+      const createPart = async (preset: PartPreset) => {
+        const { createPart: cp } = await import('../../src/db/queries/parts');
+        await cp({
+          bikeId: bike.id,
+          name: preset.name,
+          category: preset.category,
+          serviceIntervalKm: preset.serviceIntervalKm,
+          replaceIntervalKm: preset.replaceIntervalKm,
+          serviceIntervalDays: preset.serviceIntervalDays,
+          replaceIntervalDays: preset.replaceIntervalDays,
+          installKm: totalKm,
+        });
+      };
 
-    const presetsToAdd = PART_PRESETS.filter((p) => selectedPresets.has(p.name));
-    for (const p of presetsToAdd) await createPart(p);
+      const presetsToAdd = PART_PRESETS.filter((p) => selectedPresets.has(p.name));
+      for (const p of presetsToAdd) await createPart(p);
 
-    router.replace('/');
+      router.replace('/');
+    } catch (e: any) {
+      Alert.alert('Could not create bike', e?.message ?? 'Something went wrong. Please try again.');
+    }
   }
 
   return (

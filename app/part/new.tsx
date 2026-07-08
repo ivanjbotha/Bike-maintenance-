@@ -39,7 +39,10 @@ export default function NewPartScreen() {
         serviceIntervalDays: svcDays ? parseInt(svcDays) : null,
         replaceIntervalDays: repDays ? parseInt(repDays) : null,
       },
-      { onSuccess: () => router.back() }
+      {
+        onSuccess: () => router.back(),
+        onError: (e: any) => Alert.alert('Could not add part', e?.message ?? 'Something went wrong. Please try again.'),
+      }
     );
   }
 

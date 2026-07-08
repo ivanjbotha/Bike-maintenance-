@@ -5,11 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PaperProvider } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SQLiteProvider } from 'expo-sqlite';
-import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import { openDatabaseSync } from 'expo-sqlite';
-import migrations from '../src/db/migrations/migrations';
+import { useDbMigrations } from '../src/db/client';
 import { lightTheme, darkTheme } from '../src/constants/theme';
 
 export { ErrorBoundary } from 'expo-router';
@@ -25,9 +21,7 @@ const queryClient = new QueryClient({
 });
 
 function MigrationRunner({ children }: { children: React.ReactNode }) {
-  const expo = openDatabaseSync('bikeservice.db');
-  const db = drizzle(expo);
-  const { success, error } = useMigrations(db, migrations);
+  const { success, error } = useDbMigrations();
 
   useEffect(() => {
     if (success || error) {
@@ -45,27 +39,25 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SQLiteProvider databaseName="bikeservice.db">
-        <QueryClientProvider client={queryClient}>
-          <PaperProvider theme={theme}>
-            <MigrationRunner>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="bike/new" options={{ title: 'Add Bike', presentation: 'modal' }} />
-                <Stack.Screen name="bike/[id]" options={{ title: 'Bike Details' }} />
-                <Stack.Screen name="bike/edit/[id]" options={{ title: 'Edit Bike', presentation: 'modal' }} />
-                <Stack.Screen name="part/new" options={{ title: 'Add Part', presentation: 'modal' }} />
-                <Stack.Screen name="part/[id]" options={{ title: 'Part Details' }} />
-                <Stack.Screen name="part/edit/[id]" options={{ title: 'Edit Part', presentation: 'modal' }} />
-                <Stack.Screen name="ride/log" options={{ title: 'Log Ride', presentation: 'modal' }} />
-                <Stack.Screen name="ride/[id]" options={{ title: 'Ride Details' }} />
-                <Stack.Screen name="shop/[id]" options={{ title: 'Shop Details' }} />
-                <Stack.Screen name="strava/connect" options={{ title: 'Connect Strava', presentation: 'modal' }} />
-              </Stack>
-            </MigrationRunner>
-          </PaperProvider>
-        </QueryClientProvider>
-      </SQLiteProvider>
+      <QueryClientProvider client={queryClient}>
+        <PaperProvider theme={theme}>
+          <MigrationRunner>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="bike/new" options={{ title: 'Add Bike', presentation: 'modal' }} />
+              <Stack.Screen name="bike/[id]" options={{ title: 'Bike Details' }} />
+              <Stack.Screen name="bike/edit/[id]" options={{ title: 'Edit Bike', presentation: 'modal' }} />
+              <Stack.Screen name="part/new" options={{ title: 'Add Part', presentation: 'modal' }} />
+              <Stack.Screen name="part/[id]" options={{ title: 'Part Details' }} />
+              <Stack.Screen name="part/edit/[id]" options={{ title: 'Edit Part', presentation: 'modal' }} />
+              <Stack.Screen name="ride/log" options={{ title: 'Log Ride', presentation: 'modal' }} />
+              <Stack.Screen name="ride/[id]" options={{ title: 'Ride Details' }} />
+              <Stack.Screen name="shop/[id]" options={{ title: 'Shop Details' }} />
+              <Stack.Screen name="strava/connect" options={{ title: 'Connect Strava', presentation: 'modal' }} />
+            </Stack>
+          </MigrationRunner>
+        </PaperProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }
