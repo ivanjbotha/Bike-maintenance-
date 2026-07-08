@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PaperProvider } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { initDb } from '../src/db/client';
+import { initDb, resetLocalDatabase } from '../src/db/client';
 import { lightTheme, darkTheme } from '../src/constants/theme';
 
 export { ErrorBoundary } from 'expo-router';
@@ -27,19 +27,48 @@ const queryClient = new QueryClient({
 function DatabaseGate({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    initDb()
+  function boot(action: () => Promise<unknown>) {
+    setBusy(true);
+    setError(null);
+    action()
       .then(() => setReady(true))
       .catch((e: Error) => setError(e))
-      .finally(() => SplashScreen.hideAsync());
+      .finally(() => {
+        setBusy(false);
+        SplashScreen.hideAsync();
+      });
+  }
+
+  useEffect(() => {
+    boot(initDb);
   }, []);
 
   if (error) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <Text style={{ fontWeight: '700', marginBottom: 8 }}>Database failed to start</Text>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 10 }}>
+        <Text style={{ fontWeight: '700' }}>Database failed to start</Text>
         <Text style={{ color: '#6b7280', textAlign: 'center' }}>{error.message}</Text>
+        <Text style={{ color: '#6b7280', textAlign: 'center', fontSize: 12 }}>
+          If this app is open in another tab, close it and press Try Again. If the problem
+          persists, Reset Local Data clears this browser's saved data and starts fresh.
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
+          <Text
+            style={{ color: '#2563eb', fontWeight: '600', padding: 8 }}
+            onPress={() => !busy && boot(initDb)}
+          >
+            Try Again
+          </Text>
+          <Text
+            style={{ color: '#ef4444', fontWeight: '600', padding: 8 }}
+            onPress={() => !busy && boot(resetLocalDatabase)}
+          >
+            Reset Local Data
+          </Text>
+        </View>
+        {busy && <ActivityIndicator color="#22c55e" />}
       </View>
     );
   }

@@ -1,6 +1,6 @@
 import { drizzle, ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { migrate } from 'drizzle-orm/expo-sqlite/migrator';
-import { openDatabaseAsync } from 'expo-sqlite';
+import { openDatabaseAsync, deleteDatabaseAsync, SQLiteDatabase } from 'expo-sqlite';
 import migrations from './migrations/migrations';
 import * as schema from './schema';
 
@@ -13,20 +13,46 @@ import * as schema from './schema';
 // migrations run on that same connection before the app renders.
 type DrizzleDb = ExpoSQLiteDatabase<typeof schema>;
 
+const DB_NAME = 'bikeservice.db';
+
+let rawDb: SQLiteDatabase | null = null;
 let dbInstance: DrizzleDb | null = null;
 let initPromise: Promise<DrizzleDb> | null = null;
 
 export function initDb(): Promise<DrizzleDb> {
   if (!initPromise) {
     initPromise = (async () => {
-      const expo = await openDatabaseAsync('bikeservice.db', { enableChangeListener: true });
+      const expo = await openDatabaseAsync(DB_NAME, { enableChangeListener: true });
+      rawDb = expo;
       const d = drizzle(expo, { schema });
       await migrate(d, migrations);
       dbInstance = d;
       return d;
-    })();
+    })().catch((e) => {
+      // Leave state clean so a retry re-attempts instead of replaying the
+      // same rejected promise.
+      initPromise = null;
+      dbInstance = null;
+      throw e;
+    });
   }
   return initPromise;
+}
+
+// Last-resort recovery for a corrupted local database (e.g. files left
+// behind by older builds that opened multiple conflicting connections).
+// Destroys all local data; only ever invoked from an explicit user action.
+export async function resetLocalDatabase(): Promise<DrizzleDb> {
+  try {
+    await rawDb?.closeAsync();
+  } catch {
+    // Connection may already be broken - deletion is what matters.
+  }
+  rawDb = null;
+  dbInstance = null;
+  initPromise = null;
+  await deleteDatabaseAsync(DB_NAME);
+  return initDb();
 }
 
 // Queries import `db` directly; the proxy defers resolution until initDb()
