@@ -7,6 +7,7 @@ import { usePartHealth, useLogService } from '../../src/hooks/usePartHealth';
 import { useBike } from '../../src/hooks/useBikes';
 import { UnitDisplay } from '../../src/components/common/UnitDisplay';
 import { EmptyState } from '../../src/components/common/EmptyState';
+import { WearGauge } from '../../src/components/common/WearGauge';
 import { HEALTH_COLORS, HEALTH_LABELS } from '../../src/constants/colors';
 import { ServiceRecord } from '../../src/types';
 
@@ -69,6 +70,11 @@ export default function PartDetailScreen() {
         <Chip style={{ backgroundColor: color + '22', alignSelf: 'flex-start' }} textStyle={{ color }}>
           {HEALTH_LABELS[health.status]}
         </Chip>
+
+        <WearGauge
+          pct={Math.max(health.serviceHealthPct, health.replaceHealthPct)}
+          status={health.status}
+        />
 
         <View style={styles.statsGrid}>
           <View style={styles.statBox}>

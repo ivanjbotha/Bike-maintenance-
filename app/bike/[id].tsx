@@ -6,6 +6,7 @@ import { useBike, useBikeParts } from '../../src/hooks/useBikes';
 import { usePartHealth } from '../../src/hooks/usePartHealth';
 import { UnitDisplay } from '../../src/components/common/UnitDisplay';
 import { EmptyState } from '../../src/components/common/EmptyState';
+import { WearGauge } from '../../src/components/common/WearGauge';
 import { HEALTH_COLORS } from '../../src/constants/colors';
 import { CATEGORY_ICONS } from '../../src/constants/partPresets';
 import { Part } from '../../src/types';
@@ -36,6 +37,13 @@ function PartRow({ part }: { part: Part }) {
             </Text>
           )}
         </View>
+        {health && (
+          <WearGauge
+            pct={Math.max(health.serviceHealthPct, health.replaceHealthPct)}
+            status={health.status}
+            showLabel={false}
+          />
+        )}
       </View>
       <MaterialCommunityIcons name="chevron-right" size={20} color="#9ca3af" />
     </Surface>
