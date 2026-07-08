@@ -10,34 +10,45 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Svg, { Path, Circle, Line } from 'react-native-svg';
+import Svg, { Path, Circle, Line, Ellipse } from 'react-native-svg';
 import type { PartHealth, PartCategory } from '../../types';
 import { HEALTH_COLORS } from '../../constants/colors';
 import { PART_PRESETS, CATEGORY_ICONS } from '../../constants/partPresets';
 
 // ─── SVG geometry ─────────────────────────────────────────────────────────
 const VW = 400;
-const VH = 260;
+const VH = 240;
 
-// Integrated aero handlebar silhouette (frontal view).
-// Clockwise from top-left corner of bar through right end, down stem, back up and around left end.
-const HANDLEBAR_PATH =
-  'M 40,28 L 165,28 C 178,26 190,24 200,24 C 210,24 222,26 235,28 ' +
-  'L 360,28 C 382,28 392,42 392,66 C 392,89 381,104 364,108 ' +
-  'L 234,94 C 231,92 230,96 230,104 L 230,224 ' +
-  'C 230,236 220,242 200,242 C 180,242 170,236 170,224 ' +
-  'L 170,104 C 170,96 169,92 166,94 ' +
-  'L 36,108 C 19,104 8,89 8,66 C 8,42 18,28 40,28 Z';
+// Frontal view of an integrated aero bar+stem (modelled on the Aeroway
+// cockpit): a wing-profile top bar arcing gently up to the middle, an
+// integrated stem tapering down from its centre to a rounded faceplate,
+// and drop hooks sweeping down/out from the wing tips.
+const BAR_BODY =
+  'M 48,78 ' +
+  'C 100,62 150,56 200,56 ' +
+  'C 250,56 300,62 352,78 ' +
+  'C 359,81 361,89 355,95 ' +
+  'C 300,104 245,101 233,102 ' +
+  'C 230,124 226,148 222,170 ' +
+  'L 218,194 ' +
+  'C 214,208 186,208 182,194 ' +
+  'L 178,170 ' +
+  'C 174,148 170,124 167,102 ' +
+  'C 155,101 100,104 45,95 ' +
+  'C 39,89 41,81 48,78 Z';
 
-// Subtle inner relief line across the bar bottom surface
-const INNER_LINE = 'M 36,95 C 100,88 150,85 200,85 C 250,85 300,88 364,95';
+// Drop hooks: thick rounded strokes in the carbon tone, drawn behind the
+// wing so the joins are hidden under the tips.
+const LEFT_DROP = 'M 60,84 C 40,98 34,126 42,152 C 49,175 63,192 84,199';
+const RIGHT_DROP = 'M 340,84 C 360,98 366,126 358,152 C 351,175 337,192 316,199';
 
-// Drop-bar hooks curving down from each end, drawn as thick rounded
-// strokes in the same tone as the bar fill so they read as one piece.
-const LEFT_DROP = 'M 20,80 C 8,120 16,166 54,197 C 71,210 90,215 101,209';
-const RIGHT_DROP = 'M 380,80 C 392,120 384,166 346,197 C 329,210 310,215 299,209';
-const DROP_HIGHLIGHT_L = 'M 26,88 C 18,122 25,160 58,188';
-const DROP_HIGHLIGHT_R = 'M 374,88 C 382,122 375,160 342,188';
+// Specular sheen along the top of the wing
+const SHEEN = 'M 70,72 C 120,60 160,55 200,55 C 240,55 280,60 330,72';
+
+const CARBON = '#17191d';
+const CARBON_EDGE = '#2b2f36';
+const CARBON_DETAIL = '#0c0e10';
+const PANEL_BG = '#eef0f3';
 
 // ─── Slot definitions ─────────────────────────────────────────────────────
 type SlotDef = {
@@ -50,62 +61,63 @@ type SlotDef = {
   keywords: string[]; // substrings to match against part names (case-insensitive)
 };
 
+// Wing-row y values follow the arc of the bar; tyres sit on the drop tips.
 const SLOTS: SlotDef[] = [
   {
-    id: 'l_end', x: 26, y: 68, icon: 'hand-left', label: 'Bar Tape', category: 'other',
+    id: 'l_end', x: 64, y: 86, icon: 'hand-left', label: 'Bar Tape', category: 'other',
     keywords: ['bar tape', 'grip'],
   },
   {
-    id: 'l_br', x: 77, y: 62, icon: 'hand-back-left', label: 'Brake F', category: 'brakes',
+    id: 'l_br', x: 98, y: 83, icon: 'hand-back-left', label: 'Brake F', category: 'brakes',
     keywords: ['brake pad (rim)', 'brake pad (disc)', 'brake cable (front)', 'front brake'],
   },
   {
-    id: 'l_ca', x: 123, y: 58, icon: 'cable-data', label: 'Cables', category: 'cables',
+    id: 'l_ca', x: 132, y: 80, icon: 'cable-data', label: 'Cables', category: 'cables',
     keywords: ['front derailleur', 'gear cable'],
   },
   {
-    id: 'l_cr', x: 164, y: 56, icon: 'cog-outline', label: 'Chainring', category: 'drivetrain',
+    id: 'l_cr', x: 166, y: 78, icon: 'cog-outline', label: 'Chainring', category: 'drivetrain',
     keywords: ['chainring'],
   },
   {
-    id: 'chain', x: 200, y: 55, icon: 'link-variant', label: 'Chain', category: 'drivetrain',
+    id: 'chain', x: 200, y: 77, icon: 'link-variant', label: 'Chain', category: 'drivetrain',
     keywords: ['chain'],
   },
   {
-    id: 'cass', x: 236, y: 56, icon: 'cog', label: 'Cassette', category: 'drivetrain',
+    id: 'cass', x: 234, y: 78, icon: 'cog', label: 'Cassette', category: 'drivetrain',
     keywords: ['cassette'],
   },
   {
-    id: 'r_ca', x: 277, y: 58, icon: 'cable-data', label: 'Cables', category: 'cables',
+    id: 'r_ca', x: 268, y: 80, icon: 'cable-data', label: 'Cables', category: 'cables',
     keywords: ['rear derailleur', 'brake cable (rear)'],
   },
   {
-    id: 'r_br', x: 323, y: 62, icon: 'disc', label: 'Brake R', category: 'brakes',
+    id: 'r_br', x: 302, y: 83, icon: 'disc', label: 'Brake R', category: 'brakes',
     keywords: ['brake rotor', 'brake pad', 'brake cable'],
   },
   {
-    id: 'r_end', x: 374, y: 68, icon: 'circle-double', label: 'Tubes', category: 'other',
+    id: 'r_end', x: 336, y: 86, icon: 'circle-double', label: 'Tubes', category: 'other',
     keywords: ['inner tube', 'cleat', 'wheel bearing'],
   },
   {
-    id: 'stem_bb', x: 200, y: 120, icon: 'axis-z-rotate-clockwise', label: 'Bottom Bracket',
+    id: 'stem_bb', x: 200, y: 122, icon: 'axis-z-rotate-clockwise', label: 'Bottom Bracket',
     category: 'drivetrain',
     keywords: ['bottom bracket', 'headset', 'general service'],
   },
   {
-    id: 'stem_fl', x: 183, y: 156, icon: 'ski', label: 'Fork', category: 'suspension',
+    id: 'stem_fl', x: 186, y: 151, icon: 'ski', label: 'Fork', category: 'suspension',
     keywords: ['fork', 'suspension', 'shock'],
   },
   {
-    id: 'stem_sv', x: 217, y: 156, icon: 'wrench', label: 'Service', category: 'other',
+    id: 'stem_sv', x: 214, y: 151, icon: 'wrench', label: 'Service', category: 'other',
     keywords: ['service', 'general', 'bearing'],
   },
   {
-    id: 'stem_ft', x: 183, y: 194, icon: 'tire', label: 'Tyre F', category: 'tyres',
+    id: 'stem_ft', x: 84, y: 197, icon: 'tire', label: 'Tyre F', category: 'tyres',
     keywords: ['front tyre', 'front tire'],
   },
   {
-    id: 'stem_rt', x: 217, y: 194, icon: 'tire', label: 'Tyre R', category: 'tyres',
+    id: 'stem_rt', x: 316, y: 197, icon: 'tire', label: 'Tyre R', category: 'tyres',
     keywords: ['rear tyre', 'rear tire'],
   },
 ];
@@ -118,8 +130,10 @@ const SCAN_START = FLASH_MS + HOLD_MS;
 const COMPLETE_MS = SCAN_START + SLOTS.length * STAGGER_MS + 400;
 
 const IGNITION_COLOR = '#fbbf24';
-const DIM_COLOR = '#374151';
-const DIM_OPACITY = 0.22;
+// Icons sit on the dark carbon bar: dim state is a faint light grey, like
+// unlit telltales etched into an instrument cluster.
+const DIM_COLOR = '#8b949e';
+const DIM_OPACITY = 0.4;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 function getIcon(partName: string, category: PartCategory): string {
@@ -286,24 +300,22 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           viewBox={`0 0 ${VW} ${VH}`}
           style={StyleSheet.absoluteFillObject}
         >
-          {/* Drop-bar hooks (behind the main body so the join looks continuous) */}
-          <Path d={LEFT_DROP} fill="none" stroke="#101820" strokeWidth={17} strokeLinecap="round" />
-          <Path d={RIGHT_DROP} fill="none" stroke="#101820" strokeWidth={17} strokeLinecap="round" />
-          {/* Handlebar body */}
-          <Path d={HANDLEBAR_PATH} fill="#101820" stroke="#1a2a3a" strokeWidth={1.5} />
-          {/* Drop outlines + relief highlight */}
-          <Path d={LEFT_DROP} fill="none" stroke="#1a2a3a" strokeWidth={1.5} />
-          <Path d={RIGHT_DROP} fill="none" stroke="#1a2a3a" strokeWidth={1.5} />
-          <Path d={DROP_HIGHLIGHT_L} fill="none" stroke="#1a2d40" strokeWidth={1} />
-          <Path d={DROP_HIGHLIGHT_R} fill="none" stroke="#1a2d40" strokeWidth={1} />
-          {/* Inner relief groove */}
-          <Path d={INNER_LINE} fill="none" stroke="#1a2d40" strokeWidth={1} />
-          {/* Steerer clamp ring */}
-          <Circle cx={200} cy={224} r={20} fill="none" stroke="#1a2d40" strokeWidth={1.5} />
-          {/* Steerer clamp slot gap (the bolt split) */}
-          <Line x1={200} y1={244} x2={200} y2={251} stroke="#0d1520" strokeWidth={4} />
-          {/* Stem shoulder line */}
-          <Line x1={170} y1={116} x2={230} y2={116} stroke="#1a2d40" strokeWidth={1} />
+          {/* Soft floor shadow, like a studio product shot */}
+          <Ellipse cx={200} cy={226} rx={150} ry={7} fill="#000000" opacity={0.08} />
+          {/* Drop hooks (behind the wing so the joins are hidden) */}
+          <Path d={LEFT_DROP} fill="none" stroke={CARBON} strokeWidth={15} strokeLinecap="round" />
+          <Path d={RIGHT_DROP} fill="none" stroke={CARBON} strokeWidth={15} strokeLinecap="round" />
+          {/* Bar-end tube openings */}
+          <Ellipse cx={84} cy={199} rx={8.5} ry={7} fill={CARBON_DETAIL} />
+          <Ellipse cx={316} cy={199} rx={8.5} ry={7} fill={CARBON_DETAIL} />
+          {/* Wing + integrated stem body */}
+          <Path d={BAR_BODY} fill={CARBON} stroke={CARBON_EDGE} strokeWidth={1} />
+          {/* Specular sheen along the top edge */}
+          <Path d={SHEEN} fill="none" stroke="#ffffff" strokeWidth={2.5} opacity={0.16} strokeLinecap="round" />
+          {/* Stem faceplate seam + bolt */}
+          <Line x1={181} y1={172} x2={219} y2={172} stroke={CARBON_DETAIL} strokeWidth={1.2} />
+          <Circle cx={200} cy={186} r={3.5} fill={CARBON_DETAIL} />
+          <Circle cx={200} cy={186} r={1.4} fill="#3a3f45" />
         </Svg>
 
         {/* Icon overlays (absolutely positioned over the SVG) */}
@@ -324,12 +336,12 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
         <View style={styles.overflow}>
           {overflow.map((h) => {
             const isAlert = h.status !== 'good';
-            const col = isAlert ? HEALTH_COLORS[h.status] : '#6b7280';
+            const col = isAlert ? HEALTH_COLORS[h.status] : '#64748b';
             return (
               <Pressable
                 key={h.partId}
                 onPress={() => onIconPress(h)}
-                style={[styles.chip, { borderColor: isAlert ? col : '#374151' }]}
+                style={[styles.chip, { borderColor: isAlert ? col : '#cbd5e1' }]}
               >
                 <MaterialCommunityIcons
                   name={getIcon(h.partName, h.category) as any}
@@ -347,7 +359,7 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { backgroundColor: '#0d1520' },
+  wrapper: { backgroundColor: PANEL_BG },
   hero: { position: 'relative' },
   iconSlot: {
     position: 'absolute',
@@ -364,7 +376,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     gap: 7,
-    backgroundColor: '#0d1520',
+    backgroundColor: PANEL_BG,
   },
   chip: {
     flexDirection: 'row',

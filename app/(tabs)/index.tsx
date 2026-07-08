@@ -159,7 +159,7 @@ export default function DashboardScreen() {
   }
 
   return (
-    <View style={[styles.screen, { backgroundColor: '#0d1520' }]}>
+    <View style={[styles.screen, { backgroundColor: '#eef0f3' }]}>
       <View style={styles.topBar}>
         <BikeSelector bikeId={effectiveBikeId} onSelect={setActiveBikeId} />
         {activeBike && (
@@ -217,7 +217,7 @@ export default function DashboardScreen() {
             <Button
               mode="outlined"
               icon="bike"
-              textColor="#e5e7eb"
+              textColor="#334155"
               style={styles.heroActionBtn}
               onPress={() => router.push(`/bike/edit/${effectiveBikeId}`)}
             >
@@ -247,7 +247,7 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  topBar: { backgroundColor: '#0a0f1a' },
+  topBar: { backgroundColor: '#ffffff' },
   bikeScroll: { maxHeight: 52 },
   bikeScrollContent: { paddingHorizontal: 12, paddingVertical: 8, gap: 8 },
   bikeChip: { marginRight: 4 },
@@ -257,14 +257,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     gap: 24,
     borderRadius: 0,
-    backgroundColor: '#0a0f1a',
+    backgroundColor: '#ffffff',
   },
   statItem: { alignItems: 'center' },
-  statValue: { fontWeight: '700', color: '#e5e7eb' },
+  statValue: { fontWeight: '700', color: '#111827' },
   statItemLabel: { color: '#6b7280', marginTop: 2 },
   scrollContent: { flexGrow: 1 },
   heroActionRow: { flexDirection: 'row', gap: 12, paddingHorizontal: 16, marginTop: 4 },
-  heroActionBtn: { flex: 1, borderColor: '#374151' },
+  heroActionBtn: { flex: 1, borderColor: '#cbd5e1' },
   backdrop: { flex: 1, backgroundColor: '#00000077' },
   sheet: {
     padding: 24,
