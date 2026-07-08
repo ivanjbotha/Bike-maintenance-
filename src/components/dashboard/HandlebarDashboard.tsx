@@ -66,7 +66,7 @@ type SlotDef = {
 // Wing-row y values follow the arc of the bar; tyres sit on the drop tips.
 const SLOTS: SlotDef[] = [
   {
-    id: 'l_end', x: 64, y: 86, icon: 'hand-left', label: 'Bar Tape', category: 'other',
+    id: 'l_end', x: 64, y: 86, icon: 'bandage', label: 'Bar Tape', category: 'other',
     keywords: ['bar tape', 'grip'],
   },
   {
