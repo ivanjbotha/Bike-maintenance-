@@ -212,6 +212,27 @@ export default function DashboardScreen() {
             partsHealth={partsHealth}
             onIconPress={setSelectedHealth}
           />
+
+          <View style={styles.heroActionRow}>
+            <Button
+              mode="outlined"
+              icon="bike"
+              textColor="#e5e7eb"
+              style={styles.heroActionBtn}
+              onPress={() => router.push(`/bike/edit/${effectiveBikeId}`)}
+            >
+              Edit Bike
+            </Button>
+            <Button
+              mode="contained"
+              icon="wrench-outline"
+              buttonColor="#22c55e"
+              style={styles.heroActionBtn}
+              onPress={() => router.push(`/part/new?bikeId=${effectiveBikeId}`)}
+            >
+              Add Equipment
+            </Button>
+          </View>
         </ScrollView>
       )}
 
@@ -242,6 +263,8 @@ const styles = StyleSheet.create({
   statValue: { fontWeight: '700', color: '#e5e7eb' },
   statItemLabel: { color: '#6b7280', marginTop: 2 },
   scrollContent: { flexGrow: 1 },
+  heroActionRow: { flexDirection: 'row', gap: 12, paddingHorizontal: 16, marginTop: 4 },
+  heroActionBtn: { flex: 1, borderColor: '#374151' },
   backdrop: { flex: 1, backgroundColor: '#00000077' },
   sheet: {
     padding: 24,

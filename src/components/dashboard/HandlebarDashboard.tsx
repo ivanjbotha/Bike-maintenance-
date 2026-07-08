@@ -32,6 +32,13 @@ const HANDLEBAR_PATH =
 // Subtle inner relief line across the bar bottom surface
 const INNER_LINE = 'M 36,95 C 100,88 150,85 200,85 C 250,85 300,88 364,95';
 
+// Drop-bar hooks curving down from each end, drawn as thick rounded
+// strokes in the same tone as the bar fill so they read as one piece.
+const LEFT_DROP = 'M 20,80 C 8,120 16,166 54,197 C 71,210 90,215 101,209';
+const RIGHT_DROP = 'M 380,80 C 392,120 384,166 346,197 C 329,210 310,215 299,209';
+const DROP_HIGHLIGHT_L = 'M 26,88 C 18,122 25,160 58,188';
+const DROP_HIGHLIGHT_R = 'M 374,88 C 382,122 375,160 342,188';
+
 // ─── Slot definitions ─────────────────────────────────────────────────────
 type SlotDef = {
   id: string;
@@ -279,8 +286,16 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           viewBox={`0 0 ${VW} ${VH}`}
           style={StyleSheet.absoluteFillObject}
         >
+          {/* Drop-bar hooks (behind the main body so the join looks continuous) */}
+          <Path d={LEFT_DROP} fill="none" stroke="#101820" strokeWidth={17} strokeLinecap="round" />
+          <Path d={RIGHT_DROP} fill="none" stroke="#101820" strokeWidth={17} strokeLinecap="round" />
           {/* Handlebar body */}
           <Path d={HANDLEBAR_PATH} fill="#101820" stroke="#1a2a3a" strokeWidth={1.5} />
+          {/* Drop outlines + relief highlight */}
+          <Path d={LEFT_DROP} fill="none" stroke="#1a2a3a" strokeWidth={1.5} />
+          <Path d={RIGHT_DROP} fill="none" stroke="#1a2a3a" strokeWidth={1.5} />
+          <Path d={DROP_HIGHLIGHT_L} fill="none" stroke="#1a2d40" strokeWidth={1} />
+          <Path d={DROP_HIGHLIGHT_R} fill="none" stroke="#1a2d40" strokeWidth={1} />
           {/* Inner relief groove */}
           <Path d={INNER_LINE} fill="none" stroke="#1a2d40" strokeWidth={1} />
           {/* Steerer clamp ring */}
