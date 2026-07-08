@@ -38,9 +38,11 @@ const BAR_BODY =
   'C 39,89 41,81 48,78 Z';
 
 // Drop hooks: thick rounded strokes in the carbon tone, drawn behind the
-// wing so the joins are hidden under the tips.
-const LEFT_DROP = 'M 60,84 C 40,98 34,126 42,152 C 49,175 63,192 84,199';
-const RIGHT_DROP = 'M 340,84 C 360,98 366,126 358,152 C 351,175 337,192 316,199';
+// wing so the joins are hidden under the tips. On the real bar they hang
+// almost straight down from the wing ends - shoulder bulging slightly
+// outward, tube ends visible at the bottom.
+const LEFT_DROP = 'M 56,88 C 46,104 44,126 48,148 C 51,166 56,180 64,190';
+const RIGHT_DROP = 'M 344,88 C 354,104 356,126 352,148 C 349,166 344,180 336,190';
 
 // Specular sheen along the top of the wing
 const SHEEN = 'M 70,72 C 120,60 160,55 200,55 C 240,55 280,60 330,72';
@@ -113,11 +115,11 @@ const SLOTS: SlotDef[] = [
     keywords: ['service', 'general', 'bearing'],
   },
   {
-    id: 'stem_ft', x: 84, y: 197, icon: 'tire', label: 'Tyre F', category: 'tyres',
+    id: 'stem_ft', x: 64, y: 188, icon: 'tire', label: 'Tyre F', category: 'tyres',
     keywords: ['front tyre', 'front tire'],
   },
   {
-    id: 'stem_rt', x: 316, y: 197, icon: 'tire', label: 'Tyre R', category: 'tyres',
+    id: 'stem_rt', x: 336, y: 188, icon: 'tire', label: 'Tyre R', category: 'tyres',
     keywords: ['rear tyre', 'rear tire'],
   },
 ];
@@ -306,8 +308,8 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           <Path d={LEFT_DROP} fill="none" stroke={CARBON} strokeWidth={15} strokeLinecap="round" />
           <Path d={RIGHT_DROP} fill="none" stroke={CARBON} strokeWidth={15} strokeLinecap="round" />
           {/* Bar-end tube openings */}
-          <Ellipse cx={84} cy={199} rx={8.5} ry={7} fill={CARBON_DETAIL} />
-          <Ellipse cx={316} cy={199} rx={8.5} ry={7} fill={CARBON_DETAIL} />
+          <Ellipse cx={64} cy={190} rx={8.5} ry={7} fill={CARBON_DETAIL} />
+          <Ellipse cx={336} cy={190} rx={8.5} ry={7} fill={CARBON_DETAIL} />
           {/* Wing + integrated stem body */}
           <Path d={BAR_BODY} fill={CARBON} stroke={CARBON_EDGE} strokeWidth={1} />
           {/* Specular sheen along the top edge */}
