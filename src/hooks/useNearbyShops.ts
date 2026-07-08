@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import * as Location from 'expo-location';
 import { fetchNearbyBikeShops, distanceBetween } from '../services/overpassService';
 import { upsertShops } from '../db/queries/shops';
+import { useAppStore } from '../store/appStore';
 import { CachedShop } from '../types';
 
 interface ShopWithDistance extends CachedShop {
@@ -9,6 +10,7 @@ interface ShopWithDistance extends CachedShop {
 }
 
 export function useNearbyShops() {
+  const searchLocation = useAppStore((s) => s.searchLocation);
   const [shops, setShops] = useState<ShopWithDistance[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,14 +20,21 @@ export function useNearbyShops() {
     setLoading(true);
     setError(null);
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setError('Location permission denied. Enable location to find nearby shops.');
-        setLoading(false);
-        return;
+      let lat: number, lon: number;
+
+      if (searchLocation) {
+        ({ lat, lon } = searchLocation);
+      } else {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setError('Location permission denied. Enable location, or set a search location in Settings.');
+          setLoading(false);
+          return;
+        }
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        lat = loc.coords.latitude;
+        lon = loc.coords.longitude;
       }
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const { latitude: lat, longitude: lon } = loc.coords;
       setUserLocation({ lat, lon });
 
       const fetched = await fetchNearbyBikeShops(lat, lon);
@@ -41,7 +50,7 @@ export function useNearbyShops() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [searchLocation]);
 
   return { shops, loading, error, userLocation, fetchShops };
 }

@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppStore } from '../../src/store/appStore';
 import { getAllBikes } from '../../src/db/queries/bikes';
 import { getAllRides } from '../../src/db/queries/rides';
+import { LocationPicker } from '../../src/components/common/LocationPicker';
 import { Unit } from '../../src/types';
 
 export default function SettingsScreen() {
@@ -33,6 +34,14 @@ export default function SettingsScreen() {
             { value: 'mi', label: 'Miles (mi)' },
           ]}
         />
+      </Surface>
+
+      <Surface style={styles.section} elevation={1}>
+        <Text variant="titleMedium" style={styles.sectionTitle}>Shop Search Location</Text>
+        <Text variant="bodySmall" style={{ color: '#9ca3af' }}>
+          Used to find nearby bike shops on the Shops tab. Set this if you're searching a city other than where you are, or if location permission isn't available.
+        </Text>
+        <LocationPicker />
       </Surface>
 
       <Surface style={styles.section} elevation={1}>

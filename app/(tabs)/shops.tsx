@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useNearbyShops } from '../../src/hooks/useNearbyShops';
 import { EmptyState } from '../../src/components/common/EmptyState';
+import { LocationPicker } from '../../src/components/common/LocationPicker';
 import { ShopMap } from '../../src/components/shops/ShopMap';
 
 export default function ShopsScreen() {
@@ -13,7 +14,7 @@ export default function ShopsScreen() {
 
   useEffect(() => {
     fetchShops();
-  }, []);
+  }, [fetchShops]);
 
   const region = userLocation
     ? {
@@ -38,7 +39,11 @@ export default function ShopsScreen() {
           message={error}
           actionLabel="Retry"
           onAction={fetchShops}
-        />
+        >
+          <View style={styles.errorPicker}>
+            <LocationPicker />
+          </View>
+        </EmptyState>
       ) : shops.length === 0 ? (
         <EmptyState
           icon="store-off"
@@ -94,6 +99,7 @@ export default function ShopsScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  errorPicker: { width: '100%', maxWidth: 420, marginTop: 8 },
   shopList: { maxHeight: 140, position: 'absolute', bottom: 0, left: 0, right: 0 },
   shopListContent: { padding: 10, gap: 10 },
   shopCard: { width: 180, padding: 14, borderRadius: 12 },

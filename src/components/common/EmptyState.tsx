@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -8,9 +9,10 @@ interface Props {
   message: string;
   actionLabel?: string;
   onAction?: () => void;
+  children?: ReactNode;
 }
 
-export function EmptyState({ icon, title, message, actionLabel, onAction }: Props) {
+export function EmptyState({ icon, title, message, actionLabel, onAction, children }: Props) {
   return (
     <View style={styles.container}>
       <MaterialCommunityIcons name={icon as any} size={64} color="#9ca3af" />
@@ -21,6 +23,7 @@ export function EmptyState({ icon, title, message, actionLabel, onAction }: Prop
           {actionLabel}
         </Button>
       )}
+      {children}
     </View>
   );
 }
