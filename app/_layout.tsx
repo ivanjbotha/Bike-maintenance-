@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useColorScheme, Text, View } from 'react-native';
+import { useColorScheme, Text, View, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PaperProvider } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SQLiteProvider } from 'expo-sqlite';
-import { useDbMigrations } from '../src/db/client';
+import { initDb } from '../src/db/client';
 import { lightTheme, darkTheme } from '../src/constants/theme';
 
 export { ErrorBoundary } from 'expo-router';
@@ -21,26 +20,20 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30000 } },
 });
 
-function MigrationRunner({ children }: { children: React.ReactNode }) {
-  const { success, error } = useDbMigrations();
-  const [timedOut, setTimedOut] = useState(false);
+// Opens the single database connection and runs migrations before anything
+// that touches the db can render. Do NOT add expo-sqlite's SQLiteProvider
+// around the tree: it opens a second connection to the same file, which the
+// web backend (OPFS) rejects.
+function DatabaseGate({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (success || error) {
-      SplashScreen.hideAsync();
-    }
-  }, [success, error]);
-
-  // Safety net: never leave the user staring at a blank screen forever if
-  // the migration promise stalls (seen on the web SQLite backend).
-  useEffect(() => {
-    if (success || error) return;
-    const t = setTimeout(() => {
-      SplashScreen.hideAsync();
-      setTimedOut(true);
-    }, 8000);
-    return () => clearTimeout(t);
-  }, [success, error]);
+    initDb()
+      .then(() => setReady(true))
+      .catch((e: Error) => setError(e))
+      .finally(() => SplashScreen.hideAsync());
+  }, []);
 
   if (error) {
     return (
@@ -50,7 +43,13 @@ function MigrationRunner({ children }: { children: React.ReactNode }) {
       </View>
     );
   }
-  if (!success && !timedOut) return null;
+  if (!ready) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color="#22c55e" />
+      </View>
+    );
+  }
   return <>{children}</>;
 }
 
@@ -60,27 +59,25 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SQLiteProvider databaseName="bikeservice.db">
-        <QueryClientProvider client={queryClient}>
-          <PaperProvider theme={theme}>
-            <MigrationRunner>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="bike/new" options={{ title: 'Add Bike', presentation: 'modal' }} />
-                <Stack.Screen name="bike/[id]" options={{ title: 'Bike Details' }} />
-                <Stack.Screen name="bike/edit/[id]" options={{ title: 'Edit Bike', presentation: 'modal' }} />
-                <Stack.Screen name="part/new" options={{ title: 'Add Part', presentation: 'modal' }} />
-                <Stack.Screen name="part/[id]" options={{ title: 'Part Details' }} />
-                <Stack.Screen name="part/edit/[id]" options={{ title: 'Edit Part', presentation: 'modal' }} />
-                <Stack.Screen name="ride/log" options={{ title: 'Log Ride', presentation: 'modal' }} />
-                <Stack.Screen name="ride/[id]" options={{ title: 'Ride Details' }} />
-                <Stack.Screen name="shop/[id]" options={{ title: 'Shop Details' }} />
-                <Stack.Screen name="strava/connect" options={{ title: 'Connect Strava', presentation: 'modal' }} />
-              </Stack>
-            </MigrationRunner>
-          </PaperProvider>
-        </QueryClientProvider>
-      </SQLiteProvider>
+      <QueryClientProvider client={queryClient}>
+        <PaperProvider theme={theme}>
+          <DatabaseGate>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="bike/new" options={{ title: 'Add Bike', presentation: 'modal' }} />
+              <Stack.Screen name="bike/[id]" options={{ title: 'Bike Details' }} />
+              <Stack.Screen name="bike/edit/[id]" options={{ title: 'Edit Bike', presentation: 'modal' }} />
+              <Stack.Screen name="part/new" options={{ title: 'Add Part', presentation: 'modal' }} />
+              <Stack.Screen name="part/[id]" options={{ title: 'Part Details' }} />
+              <Stack.Screen name="part/edit/[id]" options={{ title: 'Edit Part', presentation: 'modal' }} />
+              <Stack.Screen name="ride/log" options={{ title: 'Log Ride', presentation: 'modal' }} />
+              <Stack.Screen name="ride/[id]" options={{ title: 'Ride Details' }} />
+              <Stack.Screen name="shop/[id]" options={{ title: 'Shop Details' }} />
+              <Stack.Screen name="strava/connect" options={{ title: 'Connect Strava', presentation: 'modal' }} />
+            </Stack>
+          </DatabaseGate>
+        </PaperProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }
