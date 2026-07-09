@@ -10,46 +10,56 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Svg, { Path, Circle, Line, Ellipse } from 'react-native-svg';
+import Svg, {
+  Path,
+  Circle,
+  Ellipse,
+  Defs,
+  LinearGradient,
+  RadialGradient,
+  Stop,
+} from 'react-native-svg';
 import type { PartHealth, PartCategory } from '../../types';
 import { HEALTH_COLORS } from '../../constants/colors';
 import { PART_PRESETS, CATEGORY_ICONS } from '../../constants/partPresets';
 
 // ─── SVG geometry ─────────────────────────────────────────────────────────
 const VW = 400;
-const VH = 240;
+const VH = 250;
 
-// Frontal view of an integrated aero bar+stem (modelled on the Aeroway
-// cockpit): a wing-profile top bar arcing gently up to the middle, an
-// integrated stem tapering down from its centre to a rounded faceplate,
-// and drop hooks sweeping down/out from the wing tips.
-const BAR_BODY =
-  'M 48,78 ' +
-  'C 100,62 150,56 200,56 ' +
-  'C 250,56 300,62 352,78 ' +
-  'C 359,81 361,89 355,95 ' +
-  'C 300,104 245,101 233,102 ' +
-  'C 230,124 226,148 222,170 ' +
-  'L 218,194 ' +
-  'C 214,208 186,208 182,194 ' +
-  'L 178,170 ' +
-  'C 174,148 170,124 167,102 ' +
-  'C 155,101 100,104 45,95 ' +
-  'C 39,89 41,81 48,78 Z';
+// Traced from a frontal product shot of an integrated aero cockpit:
+// - the wing's top edge is HIGHEST at the ends and dips toward the centre
+// - the drop hooks curl up OVER the wing ends (the tallest points), then
+//   descend almost vertically to angled tube openings at the bottom
+// - the stem tapers from the wing centre through a cone into the steerer
+//   column, with the silver stem bolt recessed at the cone.
+const WING =
+  'M 66,84 ' +
+  'C 120,88 160,98 200,101 ' +
+  'C 240,98 280,88 334,84 ' +
+  'C 342,85 346,92 340,100 ' +
+  'C 282,108 242,124 200,126 ' +
+  'C 158,124 118,108 60,100 ' +
+  'C 54,92 58,85 66,84 Z';
 
-// Drop hooks: thick rounded strokes in the carbon tone, drawn behind the
-// wing so the joins are hidden under the tips. On the real bar they hang
-// almost straight down from the wing ends - shoulder bulging slightly
-// outward, tube ends visible at the bottom.
-const LEFT_DROP = 'M 56,88 C 46,104 44,126 48,148 C 51,166 56,180 64,190';
-const RIGHT_DROP = 'M 344,88 C 354,104 356,126 352,148 C 349,166 344,180 336,190';
+const WING_SHEEN = 'M 74,87 C 128,91 164,100 200,104 C 236,100 272,91 326,87';
 
-// Specular sheen along the top of the wing
-const SHEEN = 'M 70,72 C 120,60 160,55 200,55 C 240,55 280,60 330,72';
+// Hook centrelines (drawn as thick round-capped strokes). The join to the
+// wing hides under the wing ends; the curl apex rises above the wing.
+const LEFT_HOOK =
+  'M 76,96 C 56,92 40,84 38,70 C 36,56 18,58 16,74 C 13,92 14,120 18,144 C 21,164 22,178 20,192';
+const RIGHT_HOOK =
+  'M 324,96 C 344,92 360,84 362,70 C 364,56 382,58 384,74 C 387,92 386,120 382,144 C 379,164 378,178 380,192';
 
-const CARBON = '#17191d';
-const CARBON_EDGE = '#2b2f36';
-const CARBON_DETAIL = '#0c0e10';
+// Integrated stem: tapered body, cone step, then steerer column.
+const STEM =
+  'M 178,118 L 222,118 ' +
+  'C 221,140 218,156 215,170 L 217,174 ' +
+  'C 214,186 212,190 209,192 L 208,214 ' +
+  'C 206,218 194,218 192,214 L 191,192 ' +
+  'C 188,190 186,186 183,174 L 185,170 ' +
+  'C 182,156 179,140 178,118 Z';
+
 const PANEL_BG = '#eef0f3';
 
 // ─── Slot definitions ─────────────────────────────────────────────────────
@@ -63,63 +73,65 @@ type SlotDef = {
   keywords: string[]; // substrings to match against part names (case-insensitive)
 };
 
-// Wing-row y values follow the arc of the bar; tyres sit on the drop tips.
+// Seven telltales spread along the wing (y follows its dip), end slots on
+// the hook curls, tyres on the hook tubes above the openings, and a
+// vertical stack down the stem (fork lives on the steerer itself).
 const SLOTS: SlotDef[] = [
   {
-    id: 'l_end', x: 64, y: 86, icon: 'bandage', label: 'Bar Tape', category: 'other',
+    id: 'l_end', x: 27, y: 63, icon: 'bandage', label: 'Bar Tape', category: 'other',
     keywords: ['bar tape', 'grip'],
   },
   {
-    id: 'l_br', x: 98, y: 83, icon: 'hand-back-left', label: 'Brake F', category: 'brakes',
+    id: 'l_br', x: 70, y: 92, icon: 'hand-back-left', label: 'Brake F', category: 'brakes',
     keywords: ['brake pad (rim)', 'brake pad (disc)', 'brake cable (front)', 'front brake'],
   },
   {
-    id: 'l_ca', x: 132, y: 80, icon: 'cable-data', label: 'Cables', category: 'cables',
+    id: 'l_ca', x: 113, y: 99, icon: 'cable-data', label: 'Cables', category: 'cables',
     keywords: ['front derailleur', 'gear cable'],
   },
   {
-    id: 'l_cr', x: 166, y: 78, icon: 'cog-outline', label: 'Chainring', category: 'drivetrain',
+    id: 'l_cr', x: 156, y: 105, icon: 'cog-outline', label: 'Chainring', category: 'drivetrain',
     keywords: ['chainring'],
   },
   {
-    id: 'chain', x: 200, y: 77, icon: 'link-variant', label: 'Chain', category: 'drivetrain',
+    id: 'chain', x: 200, y: 109, icon: 'link-variant', label: 'Chain', category: 'drivetrain',
     keywords: ['chain'],
   },
   {
-    id: 'cass', x: 234, y: 78, icon: 'cog', label: 'Cassette', category: 'drivetrain',
+    id: 'cass', x: 244, y: 105, icon: 'cog', label: 'Cassette', category: 'drivetrain',
     keywords: ['cassette'],
   },
   {
-    id: 'r_ca', x: 268, y: 80, icon: 'cable-data', label: 'Cables', category: 'cables',
+    id: 'r_ca', x: 287, y: 99, icon: 'cable-data', label: 'Cables', category: 'cables',
     keywords: ['rear derailleur', 'brake cable (rear)'],
   },
   {
-    id: 'r_br', x: 302, y: 83, icon: 'disc', label: 'Brake R', category: 'brakes',
+    id: 'r_br', x: 330, y: 92, icon: 'disc', label: 'Brake R', category: 'brakes',
     keywords: ['brake rotor', 'brake pad', 'brake cable'],
   },
   {
-    id: 'r_end', x: 336, y: 86, icon: 'circle-double', label: 'Tubes', category: 'other',
+    id: 'r_end', x: 373, y: 63, icon: 'circle-double', label: 'Tubes', category: 'other',
     keywords: ['inner tube', 'cleat', 'wheel bearing'],
   },
   {
-    id: 'stem_bb', x: 200, y: 122, icon: 'axis-z-rotate-clockwise', label: 'Bottom Bracket',
+    id: 'stem_bb', x: 200, y: 134, icon: 'axis-z-rotate-clockwise', label: 'Bottom Bracket',
     category: 'drivetrain',
     keywords: ['bottom bracket', 'headset', 'general service'],
   },
   {
-    id: 'stem_fl', x: 186, y: 151, icon: 'ski', label: 'Fork', category: 'suspension',
+    id: 'stem_fl', x: 200, y: 204, icon: 'ski', label: 'Fork', category: 'suspension',
     keywords: ['fork', 'suspension', 'shock'],
   },
   {
-    id: 'stem_sv', x: 214, y: 151, icon: 'wrench', label: 'Service', category: 'other',
+    id: 'stem_sv', x: 200, y: 156, icon: 'wrench', label: 'Service', category: 'other',
     keywords: ['service', 'general', 'bearing'],
   },
   {
-    id: 'stem_ft', x: 64, y: 188, icon: 'tire', label: 'Tyre F', category: 'tyres',
+    id: 'stem_ft', x: 21, y: 168, icon: 'tire', label: 'Tyre F', category: 'tyres',
     keywords: ['front tyre', 'front tire'],
   },
   {
-    id: 'stem_rt', x: 336, y: 188, icon: 'tire', label: 'Tyre R', category: 'tyres',
+    id: 'stem_rt', x: 379, y: 168, icon: 'tire', label: 'Tyre R', category: 'tyres',
     keywords: ['rear tyre', 'rear tire'],
   },
 ];
@@ -270,6 +282,21 @@ function DashboardIcon({ slot, health, idx, svgScale, onPress }: IconProps) {
           name={(health ? getIcon(health.partName, health.category) : slot.icon) as any}
           size={ICO}
           color={color}
+          style={
+            color === DIM_COLOR
+              ? {
+                  // Unlit: engraved into the carbon
+                  textShadowColor: 'rgba(0,0,0,0.9)',
+                  textShadowOffset: { width: 0.5, height: 1.2 },
+                  textShadowRadius: 1,
+                }
+              : {
+                  // Lit: LED glow in the telltale's own colour
+                  textShadowColor: color,
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 8,
+                }
+          }
         />
       </Animated.View>
     </Pressable>
@@ -302,22 +329,56 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           viewBox={`0 0 ${VW} ${VH}`}
           style={StyleSheet.absoluteFillObject}
         >
-          {/* Soft floor shadow, like a studio product shot */}
-          <Ellipse cx={200} cy={226} rx={150} ry={7} fill="#000000" opacity={0.08} />
-          {/* Drop hooks (behind the wing so the joins are hidden) */}
-          <Path d={LEFT_DROP} fill="none" stroke={CARBON} strokeWidth={15} strokeLinecap="round" />
-          <Path d={RIGHT_DROP} fill="none" stroke={CARBON} strokeWidth={15} strokeLinecap="round" />
-          {/* Bar-end tube openings */}
-          <Ellipse cx={64} cy={190} rx={8.5} ry={7} fill={CARBON_DETAIL} />
-          <Ellipse cx={336} cy={190} rx={8.5} ry={7} fill={CARBON_DETAIL} />
-          {/* Wing + integrated stem body */}
-          <Path d={BAR_BODY} fill={CARBON} stroke={CARBON_EDGE} strokeWidth={1} />
-          {/* Specular sheen along the top edge */}
-          <Path d={SHEEN} fill="none" stroke="#ffffff" strokeWidth={2.5} opacity={0.16} strokeLinecap="round" />
-          {/* Stem faceplate seam + bolt */}
-          <Line x1={181} y1={172} x2={219} y2={172} stroke={CARBON_DETAIL} strokeWidth={1.2} />
-          <Circle cx={200} cy={186} r={3.5} fill={CARBON_DETAIL} />
-          <Circle cx={200} cy={186} r={1.4} fill="#3a3f45" />
+          <Defs>
+            <LinearGradient id="carbonGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#4a4e55" />
+              <Stop offset="0.25" stopColor="#2c2f34" />
+              <Stop offset="0.55" stopColor="#17191d" />
+              <Stop offset="1" stopColor="#0a0b0d" />
+            </LinearGradient>
+            <LinearGradient id="stemGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#292c31" />
+              <Stop offset="1" stopColor="#0b0c0e" />
+            </LinearGradient>
+            <RadialGradient id="floorGrad" cx="0.5" cy="0.5" rx="0.5" ry="0.5">
+              <Stop offset="0" stopColor="#000000" stopOpacity="0.16" />
+              <Stop offset="1" stopColor="#000000" stopOpacity="0" />
+            </RadialGradient>
+            <RadialGradient id="boltGrad" cx="0.35" cy="0.35" rx="0.7" ry="0.7">
+              <Stop offset="0" stopColor="#f1f2f4" />
+              <Stop offset="0.6" stopColor="#b7bac0" />
+              <Stop offset="1" stopColor="#767a81" />
+            </RadialGradient>
+          </Defs>
+
+          {/* Studio floor shadow */}
+          <Ellipse cx={200} cy={234} rx={175} ry={10} fill="url(#floorGrad)" />
+          <Ellipse cx={200} cy={232} rx={30} ry={5} fill="#000000" opacity={0.1} />
+
+          {/* Drop hooks behind the wing */}
+          <Path d={LEFT_HOOK} fill="none" stroke="url(#carbonGrad)" strokeWidth={14.5} strokeLinecap="round" />
+          <Path d={RIGHT_HOOK} fill="none" stroke="url(#carbonGrad)" strokeWidth={14.5} strokeLinecap="round" />
+          {/* Cylindrical highlight along each hook */}
+          <Path d={LEFT_HOOK} fill="none" stroke="#787d85" strokeWidth={3} opacity={0.3} strokeLinecap="round" transform="translate(-2,-3)" />
+          <Path d={RIGHT_HOOK} fill="none" stroke="#787d85" strokeWidth={3} opacity={0.3} strokeLinecap="round" transform="translate(2,-3)" />
+          {/* Angled tube openings at the hook tips */}
+          <Ellipse cx={20} cy={193} rx={6.5} ry={8.5} fill="#060708" transform="rotate(-12 20 193)" />
+          <Ellipse cx={20} cy={193} rx={6.5} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(-12 20 193)" />
+          <Ellipse cx={380} cy={193} rx={6.5} ry={8.5} fill="#060708" transform="rotate(12 380 193)" />
+          <Ellipse cx={380} cy={193} rx={6.5} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(12 380 193)" />
+
+          {/* Stem + steerer (behind the wing so the junction is hidden) */}
+          <Path d={STEM} fill="url(#stemGrad)" stroke="#08090b" strokeWidth={0.8} />
+          {/* Wing */}
+          <Path d={WING} fill="url(#carbonGrad)" stroke="#08090b" strokeWidth={0.8} />
+          {/* Top-edge sheen */}
+          <Path d={WING_SHEEN} fill="none" stroke="#858a92" strokeWidth={1.6} opacity={0.45} strokeLinecap="round" />
+          {/* Ambient shadow where the stem meets the wing */}
+          <Ellipse cx={200} cy={129} rx={26} ry={4.5} fill="#000000" opacity={0.25} />
+          {/* Recessed silver stem bolt */}
+          <Circle cx={200} cy={178} r={8} fill="#060708" />
+          <Circle cx={200} cy={178} r={5} fill="url(#boltGrad)" />
+          <Circle cx={200} cy={178} r={1.6} fill="#5b5f66" />
         </Svg>
 
         {/* Icon overlays (absolutely positioned over the SVG) */}
