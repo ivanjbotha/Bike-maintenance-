@@ -28,26 +28,26 @@ const VH = 250;
 // The wing is drawn deep enough to carry all fourteen telltales in two
 // rows across the horizontal section.
 const WING =
-  'M 62,70 ' +
-  'C 120,74 160,84 200,88 ' +
-  'C 240,84 280,74 338,70 ' +
-  'C 347,71 350,84 344,114 ' +
-  'C 286,124 242,136 200,138 ' +
-  'C 158,136 114,124 56,114 ' +
-  'C 50,84 53,71 62,70 Z';
+  'M 62,72 ' +
+  'C 120,75 160,79 200,81 ' +
+  'C 240,79 280,75 338,72 ' +
+  'C 347,73 350,86 344,116 ' +
+  'C 286,124 242,129 200,131 ' +
+  'C 158,129 114,124 56,116 ' +
+  'C 50,86 53,73 62,72 Z';
 
 // Lighter top surface band of the wing (top-lit)
 const WING_TOP_BAND =
-  'M 62,70 ' +
-  'C 120,74 160,84 200,88 ' +
-  'C 240,84 280,74 338,70 ' +
-  'C 345,71 347,75 344,79 ' +
-  'C 288,83 240,94 200,98 ' +
-  'C 160,94 112,83 56,79 ' +
-  'C 53,75 55,71 62,70 Z';
+  'M 62,72 ' +
+  'C 120,75 160,79 200,81 ' +
+  'C 240,79 280,75 338,72 ' +
+  'C 345,73 347,77 344,81 ' +
+  'C 288,84 240,89 200,91 ' +
+  'C 160,89 112,84 56,81 ' +
+  'C 53,77 55,73 62,72 Z';
 
-const WING_SHEEN = 'M 70,73 C 128,77 164,86 200,90 C 236,86 272,77 330,73';
-const WING_UNDER_SHADOW = 'M 72,112 C 130,120 165,132 200,135 C 235,132 270,120 328,112';
+const WING_SHEEN = 'M 70,75 C 128,78 164,81 200,83 C 236,81 272,78 330,75';
+const WING_UNDER_SHADOW = 'M 72,114 C 130,120 165,126 200,128 C 235,126 270,120 328,114';
 
 // Hook centrelines (drawn as thick round-capped strokes). The join to the
 // wing hides under the wing ends; the curl apex rises above the wing.
@@ -58,12 +58,12 @@ const RIGHT_HOOK =
 
 // Integrated stem: tapered body, cone step, then steerer column.
 const STEM =
-  'M 180,130 L 220,130 ' +
-  'C 219,148 217,160 214,172 L 216,176 ' +
+  'M 180,124 L 220,124 ' +
+  'C 219,146 217,160 214,172 L 216,176 ' +
   'C 213,188 211,192 208,194 L 207,214 ' +
   'C 205,218 195,218 193,214 L 192,194 ' +
   'C 189,192 187,188 184,176 L 186,172 ' +
-  'C 183,160 181,148 180,130 Z';
+  'C 183,160 181,146 180,124 Z';
 
 const PANEL_BG = '#eef0f3';
 
@@ -83,15 +83,15 @@ type SlotDef = {
 const SLOTS: SlotDef[] = [
   // ── Row 1 ──
   {
-    id: 'l_end', x: 68, y: 82, icon: 'bandage', label: 'Bar Tape', category: 'other',
+    id: 'l_end', x: 68, y: 84, icon: 'bandage', label: 'Bar Tape', category: 'other',
     keywords: ['bar tape', 'grip'],
   },
   {
-    id: 'l_br', x: 112, y: 88, icon: 'hand-back-left', label: 'Brake F', category: 'brakes',
+    id: 'l_br', x: 112, y: 86, icon: 'hand-back-left', label: 'Brake F', category: 'brakes',
     keywords: ['brake pad (rim)', 'brake pad (disc)', 'brake cable (front)', 'front brake'],
   },
   {
-    id: 'l_ca', x: 156, y: 94, icon: 'cable-data', label: 'Cables', category: 'cables',
+    id: 'l_ca', x: 156, y: 88, icon: 'cable-data', label: 'Cables', category: 'cables',
     keywords: ['front derailleur', 'gear cable'],
   },
   {
@@ -102,37 +102,37 @@ const SLOTS: SlotDef[] = [
     keywords: ['chainring'],
   },
   {
-    id: 'chain', x: 200, y: 98, icon: 'link-variant', label: 'Chain', category: 'drivetrain',
+    id: 'chain', x: 200, y: 90, icon: 'link-variant', label: 'Chain', category: 'drivetrain',
     keywords: ['chain'],
   },
   {
-    id: 'cass', x: 244, y: 94, icon: 'cog', label: 'Cassette', category: 'drivetrain',
+    id: 'cass', x: 244, y: 88, icon: 'cog', label: 'Cassette', category: 'drivetrain',
     keywords: ['cassette'],
   },
   {
-    id: 'r_ca', x: 288, y: 88, icon: 'cable-data', label: 'Cables', category: 'cables',
+    id: 'r_ca', x: 288, y: 86, icon: 'cable-data', label: 'Cables', category: 'cables',
     keywords: ['rear derailleur', 'brake cable (rear)'],
   },
   {
-    id: 'r_br', x: 332, y: 82, icon: 'disc', label: 'Brake R', category: 'brakes',
+    id: 'r_br', x: 332, y: 84, icon: 'disc', label: 'Brake R', category: 'brakes',
     keywords: ['brake rotor', 'brake pad', 'brake cable'],
   },
   // ── Row 2 ──
   {
-    id: 'stem_ft', x: 68, y: 102, icon: 'tire', label: 'Tyre F', category: 'tyres',
+    id: 'stem_ft', x: 68, y: 106, icon: 'tire', label: 'Tyre F', category: 'tyres',
     keywords: ['front tyre', 'front tire'],
   },
   {
-    id: 'stem_bb', x: 156, y: 114, icon: 'axis-z-rotate-clockwise', label: 'Bottom Bracket',
+    id: 'stem_bb', x: 156, y: 110, icon: 'axis-z-rotate-clockwise', label: 'Bottom Bracket',
     category: 'drivetrain',
     keywords: ['bottom bracket', 'headset', 'general service'],
   },
   {
-    id: 'stem_sv', x: 200, y: 118, icon: 'wrench', label: 'Service', category: 'other',
+    id: 'stem_sv', x: 200, y: 112, icon: 'wrench', label: 'Service', category: 'other',
     keywords: ['service', 'general', 'bearing'],
   },
   {
-    id: 'stem_fl', x: 244, y: 114, icon: 'ski', label: 'Fork', category: 'suspension',
+    id: 'stem_fl', x: 244, y: 110, icon: 'ski', label: 'Fork', category: 'suspension',
     keywords: ['fork', 'suspension', 'shock'],
   },
   {
@@ -140,7 +140,7 @@ const SLOTS: SlotDef[] = [
     keywords: ['inner tube', 'cleat', 'wheel bearing'],
   },
   {
-    id: 'stem_rt', x: 332, y: 102, icon: 'tire', label: 'Tyre R', category: 'tyres',
+    id: 'stem_rt', x: 332, y: 106, icon: 'tire', label: 'Tyre R', category: 'tyres',
     keywords: ['rear tyre', 'rear tire'],
   },
 ];
@@ -361,7 +361,7 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           {/* Stem + steerer (behind the wing so the junction is hidden) */}
           <Path d={STEM} fill="#17191d" stroke="#08090b" strokeWidth={0.8} />
           {/* Stem left-edge light catch */}
-          <Path d="M 183,138 C 182,154 184,164 186,174" fill="none" stroke="#41454c" strokeWidth={1.6} opacity={0.5} />
+          <Path d="M 183,132 C 182,148 184,160 186,172" fill="none" stroke="#41454c" strokeWidth={1.6} opacity={0.5} />
 
           {/* Wing: base, then a lighter top band for the top-lit surface */}
           <Path d={WING} fill="#141619" stroke="#08090b" strokeWidth={0.8} />
@@ -371,7 +371,7 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           {/* Underside core shadow */}
           <Path d={WING_UNDER_SHADOW} fill="none" stroke="#000000" strokeWidth={3} opacity={0.25} strokeLinecap="round" />
           {/* Ambient shadow where the stem meets the wing */}
-          <Ellipse cx={200} cy={141} rx={26} ry={4.5} fill="#000000" opacity={0.25} />
+          <Ellipse cx={200} cy={134} rx={26} ry={4.5} fill="#000000" opacity={0.25} />
           {/* Recessed silver stem bolt */}
           <Circle cx={200} cy={182} r={8} fill="#060708" />
           <Circle cx={200} cy={182} r={5} fill="#b9bcc2" />
