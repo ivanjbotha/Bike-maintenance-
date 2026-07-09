@@ -10,15 +10,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Svg, {
-  Path,
-  Circle,
-  Ellipse,
-  Defs,
-  LinearGradient,
-  RadialGradient,
-  Stop,
-} from 'react-native-svg';
+import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
 import type { PartHealth, PartCategory } from '../../types';
 import { HEALTH_COLORS } from '../../constants/colors';
 import { PART_PRESETS, CATEGORY_ICONS } from '../../constants/partPresets';
@@ -329,38 +321,20 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           viewBox={`0 0 ${VW} ${VH}`}
           style={StyleSheet.absoluteFillObject}
         >
-          <Defs>
-            <LinearGradient id="carbonGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#4a4e55" />
-              <Stop offset="0.25" stopColor="#2c2f34" />
-              <Stop offset="0.55" stopColor="#17191d" />
-              <Stop offset="1" stopColor="#0a0b0d" />
-            </LinearGradient>
-            <LinearGradient id="stemGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#292c31" />
-              <Stop offset="1" stopColor="#0b0c0e" />
-            </LinearGradient>
-            <RadialGradient id="floorGrad" cx="0.5" cy="0.5" rx="0.5" ry="0.5">
-              <Stop offset="0" stopColor="#000000" stopOpacity="0.16" />
-              <Stop offset="1" stopColor="#000000" stopOpacity="0" />
-            </RadialGradient>
-            <RadialGradient id="boltGrad" cx="0.35" cy="0.35" rx="0.7" ry="0.7">
-              <Stop offset="0" stopColor="#f1f2f4" />
-              <Stop offset="0.6" stopColor="#b7bac0" />
-              <Stop offset="1" stopColor="#767a81" />
-            </RadialGradient>
-          </Defs>
-
-          {/* Studio floor shadow */}
-          <Ellipse cx={200} cy={234} rx={175} ry={10} fill="url(#floorGrad)" />
+          {/* Studio floor shadow (stacked ellipses fake a radial falloff;
+              gradient url() refs don't paint under react-native-svg web) */}
+          <Ellipse cx={200} cy={234} rx={175} ry={10} fill="#000000" opacity={0.04} />
+          <Ellipse cx={200} cy={234} rx={130} ry={8} fill="#000000" opacity={0.05} />
+          <Ellipse cx={200} cy={234} rx={80} ry={6} fill="#000000" opacity={0.06} />
           <Ellipse cx={200} cy={232} rx={30} ry={5} fill="#000000" opacity={0.1} />
 
-          {/* Drop hooks behind the wing */}
-          <Path d={LEFT_HOOK} fill="none" stroke="url(#carbonGrad)" strokeWidth={14.5} strokeLinecap="round" />
-          <Path d={RIGHT_HOOK} fill="none" stroke="url(#carbonGrad)" strokeWidth={14.5} strokeLinecap="round" />
-          {/* Cylindrical highlight along each hook */}
-          <Path d={LEFT_HOOK} fill="none" stroke="#787d85" strokeWidth={3} opacity={0.3} strokeLinecap="round" transform="translate(-2,-3)" />
-          <Path d={RIGHT_HOOK} fill="none" stroke="#787d85" strokeWidth={3} opacity={0.3} strokeLinecap="round" transform="translate(2,-3)" />
+          {/* Drop hooks: concentric strokes fake a top-lit cylinder */}
+          <Path d={LEFT_HOOK} fill="none" stroke="#101215" strokeWidth={14.5} strokeLinecap="round" />
+          <Path d={RIGHT_HOOK} fill="none" stroke="#101215" strokeWidth={14.5} strokeLinecap="round" />
+          <Path d={LEFT_HOOK} fill="none" stroke="#26292e" strokeWidth={8} strokeLinecap="round" transform="translate(-1,-2)" />
+          <Path d={RIGHT_HOOK} fill="none" stroke="#26292e" strokeWidth={8} strokeLinecap="round" transform="translate(1,-2)" />
+          <Path d={LEFT_HOOK} fill="none" stroke="#787d85" strokeWidth={2.5} opacity={0.35} strokeLinecap="round" transform="translate(-2,-3.5)" />
+          <Path d={RIGHT_HOOK} fill="none" stroke="#787d85" strokeWidth={2.5} opacity={0.35} strokeLinecap="round" transform="translate(2,-3.5)" />
           {/* Angled tube openings at the hook tips */}
           <Ellipse cx={20} cy={193} rx={6.5} ry={8.5} fill="#060708" transform="rotate(-12 20 193)" />
           <Ellipse cx={20} cy={193} rx={6.5} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(-12 20 193)" />
@@ -368,17 +342,27 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           <Ellipse cx={380} cy={193} rx={6.5} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(12 380 193)" />
 
           {/* Stem + steerer (behind the wing so the junction is hidden) */}
-          <Path d={STEM} fill="url(#stemGrad)" stroke="#08090b" strokeWidth={0.8} />
-          {/* Wing */}
-          <Path d={WING} fill="url(#carbonGrad)" stroke="#08090b" strokeWidth={0.8} />
+          <Path d={STEM} fill="#17191d" stroke="#08090b" strokeWidth={0.8} />
+          {/* Stem left-edge light catch */}
+          <Path d="M 181,126 C 180,144 182,160 185,172" fill="none" stroke="#41454c" strokeWidth={1.6} opacity={0.5} />
+
+          {/* Wing: base, then a lighter top band for the top-lit surface */}
+          <Path d={WING} fill="#141619" stroke="#08090b" strokeWidth={0.8} />
+          <Path
+            d="M 66,84 C 120,88 160,98 200,101 C 240,98 280,88 334,84 C 342,85 344,89 341,93 C 284,97 240,108 200,111 C 160,108 116,97 59,93 C 56,89 58,85 66,84 Z"
+            fill="#2e3238"
+          />
           {/* Top-edge sheen */}
-          <Path d={WING_SHEEN} fill="none" stroke="#858a92" strokeWidth={1.6} opacity={0.45} strokeLinecap="round" />
+          <Path d={WING_SHEEN} fill="none" stroke="#9aa0a8" strokeWidth={1.6} opacity={0.5} strokeLinecap="round" />
+          {/* Underside core shadow */}
+          <Path d="M 74,99 C 130,106 165,120 200,123 C 235,120 270,106 326,99" fill="none" stroke="#000000" strokeWidth={3} opacity={0.25} strokeLinecap="round" />
           {/* Ambient shadow where the stem meets the wing */}
           <Ellipse cx={200} cy={129} rx={26} ry={4.5} fill="#000000" opacity={0.25} />
           {/* Recessed silver stem bolt */}
           <Circle cx={200} cy={178} r={8} fill="#060708" />
-          <Circle cx={200} cy={178} r={5} fill="url(#boltGrad)" />
-          <Circle cx={200} cy={178} r={1.6} fill="#5b5f66" />
+          <Circle cx={200} cy={178} r={5} fill="#b9bcc2" />
+          <Circle cx={198.5} cy={176.5} r={2.2} fill="#e8eaed" />
+          <Circle cx={200} cy={178} r={1.4} fill="#585c63" />
         </Svg>
 
         {/* Icon overlays (absolutely positioned over the SVG) */}
