@@ -25,32 +25,45 @@ const VH = 250;
 //   descend almost vertically to angled tube openings at the bottom
 // - the stem tapers from the wing centre through a cone into the steerer
 //   column, with the silver stem bolt recessed at the cone.
+// The wing is drawn deep enough to carry all fourteen telltales in two
+// rows across the horizontal section.
 const WING =
-  'M 66,84 ' +
-  'C 120,88 160,98 200,101 ' +
-  'C 240,98 280,88 334,84 ' +
-  'C 342,85 346,92 340,100 ' +
-  'C 282,108 242,124 200,126 ' +
-  'C 158,124 118,108 60,100 ' +
-  'C 54,92 58,85 66,84 Z';
+  'M 62,70 ' +
+  'C 120,74 160,84 200,88 ' +
+  'C 240,84 280,74 338,70 ' +
+  'C 347,71 350,84 344,114 ' +
+  'C 286,124 242,136 200,138 ' +
+  'C 158,136 114,124 56,114 ' +
+  'C 50,84 53,71 62,70 Z';
 
-const WING_SHEEN = 'M 74,87 C 128,91 164,100 200,104 C 236,100 272,91 326,87';
+// Lighter top surface band of the wing (top-lit)
+const WING_TOP_BAND =
+  'M 62,70 ' +
+  'C 120,74 160,84 200,88 ' +
+  'C 240,84 280,74 338,70 ' +
+  'C 345,71 347,75 344,79 ' +
+  'C 288,83 240,94 200,98 ' +
+  'C 160,94 112,83 56,79 ' +
+  'C 53,75 55,71 62,70 Z';
+
+const WING_SHEEN = 'M 70,73 C 128,77 164,86 200,90 C 236,86 272,77 330,73';
+const WING_UNDER_SHADOW = 'M 72,112 C 130,120 165,132 200,135 C 235,132 270,120 328,112';
 
 // Hook centrelines (drawn as thick round-capped strokes). The join to the
 // wing hides under the wing ends; the curl apex rises above the wing.
 const LEFT_HOOK =
-  'M 76,96 C 56,92 40,84 38,70 C 36,56 18,58 16,74 C 13,92 14,120 18,144 C 21,164 22,178 20,192';
+  'M 76,98 C 56,94 40,82 38,66 C 36,50 16,52 14,68 C 11,88 12,118 16,142 C 19,162 20,178 18,192';
 const RIGHT_HOOK =
-  'M 324,96 C 344,92 360,84 362,70 C 364,56 382,58 384,74 C 387,92 386,120 382,144 C 379,164 378,178 380,192';
+  'M 324,98 C 344,94 360,82 362,66 C 364,50 384,52 386,68 C 389,88 388,118 384,142 C 381,162 380,178 382,192';
 
 // Integrated stem: tapered body, cone step, then steerer column.
 const STEM =
-  'M 178,118 L 222,118 ' +
-  'C 221,140 218,156 215,170 L 217,174 ' +
-  'C 214,186 212,190 209,192 L 208,214 ' +
-  'C 206,218 194,218 192,214 L 191,192 ' +
-  'C 188,190 186,186 183,174 L 185,170 ' +
-  'C 182,156 179,140 178,118 Z';
+  'M 180,130 L 220,130 ' +
+  'C 219,148 217,160 214,172 L 216,176 ' +
+  'C 213,188 211,192 208,194 L 207,214 ' +
+  'C 205,218 195,218 193,214 L 192,194 ' +
+  'C 189,192 187,188 184,176 L 186,172 ' +
+  'C 183,160 181,148 180,130 Z';
 
 const PANEL_BG = '#eef0f3';
 
@@ -65,65 +78,69 @@ type SlotDef = {
   keywords: string[]; // substrings to match against part names (case-insensitive)
 };
 
-// Seven telltales spread along the wing (y follows its dip), end slots on
-// the hook curls, tyres on the hook tubes above the openings, and a
-// vertical stack down the stem (fork lives on the steerer itself).
+// All fourteen telltales live on the horizontal wing in two rows of seven;
+// each row's y follows the wing's dip toward the centre.
 const SLOTS: SlotDef[] = [
+  // ── Row 1 ──
   {
-    id: 'l_end', x: 27, y: 63, icon: 'bandage', label: 'Bar Tape', category: 'other',
+    id: 'l_end', x: 68, y: 82, icon: 'bandage', label: 'Bar Tape', category: 'other',
     keywords: ['bar tape', 'grip'],
   },
   {
-    id: 'l_br', x: 70, y: 92, icon: 'hand-back-left', label: 'Brake F', category: 'brakes',
+    id: 'l_br', x: 112, y: 88, icon: 'hand-back-left', label: 'Brake F', category: 'brakes',
     keywords: ['brake pad (rim)', 'brake pad (disc)', 'brake cable (front)', 'front brake'],
   },
   {
-    id: 'l_ca', x: 113, y: 99, icon: 'cable-data', label: 'Cables', category: 'cables',
+    id: 'l_ca', x: 156, y: 94, icon: 'cable-data', label: 'Cables', category: 'cables',
     keywords: ['front derailleur', 'gear cable'],
   },
   {
-    id: 'l_cr', x: 156, y: 105, icon: 'cog-outline', label: 'Chainring', category: 'drivetrain',
+    // Listed before the chain slot so "Chainring" (which contains "chain")
+    // is claimed by its own slot first. Array order sets match priority;
+    // x/y alone set where a slot renders.
+    id: 'l_cr', x: 112, y: 108, icon: 'cog-outline', label: 'Chainring', category: 'drivetrain',
     keywords: ['chainring'],
   },
   {
-    id: 'chain', x: 200, y: 109, icon: 'link-variant', label: 'Chain', category: 'drivetrain',
+    id: 'chain', x: 200, y: 98, icon: 'link-variant', label: 'Chain', category: 'drivetrain',
     keywords: ['chain'],
   },
   {
-    id: 'cass', x: 244, y: 105, icon: 'cog', label: 'Cassette', category: 'drivetrain',
+    id: 'cass', x: 244, y: 94, icon: 'cog', label: 'Cassette', category: 'drivetrain',
     keywords: ['cassette'],
   },
   {
-    id: 'r_ca', x: 287, y: 99, icon: 'cable-data', label: 'Cables', category: 'cables',
+    id: 'r_ca', x: 288, y: 88, icon: 'cable-data', label: 'Cables', category: 'cables',
     keywords: ['rear derailleur', 'brake cable (rear)'],
   },
   {
-    id: 'r_br', x: 330, y: 92, icon: 'disc', label: 'Brake R', category: 'brakes',
+    id: 'r_br', x: 332, y: 82, icon: 'disc', label: 'Brake R', category: 'brakes',
     keywords: ['brake rotor', 'brake pad', 'brake cable'],
   },
+  // ── Row 2 ──
   {
-    id: 'r_end', x: 373, y: 63, icon: 'circle-double', label: 'Tubes', category: 'other',
-    keywords: ['inner tube', 'cleat', 'wheel bearing'],
+    id: 'stem_ft', x: 68, y: 102, icon: 'tire', label: 'Tyre F', category: 'tyres',
+    keywords: ['front tyre', 'front tire'],
   },
   {
-    id: 'stem_bb', x: 200, y: 134, icon: 'axis-z-rotate-clockwise', label: 'Bottom Bracket',
+    id: 'stem_bb', x: 156, y: 114, icon: 'axis-z-rotate-clockwise', label: 'Bottom Bracket',
     category: 'drivetrain',
     keywords: ['bottom bracket', 'headset', 'general service'],
   },
   {
-    id: 'stem_fl', x: 200, y: 204, icon: 'ski', label: 'Fork', category: 'suspension',
-    keywords: ['fork', 'suspension', 'shock'],
-  },
-  {
-    id: 'stem_sv', x: 200, y: 156, icon: 'wrench', label: 'Service', category: 'other',
+    id: 'stem_sv', x: 200, y: 118, icon: 'wrench', label: 'Service', category: 'other',
     keywords: ['service', 'general', 'bearing'],
   },
   {
-    id: 'stem_ft', x: 21, y: 168, icon: 'tire', label: 'Tyre F', category: 'tyres',
-    keywords: ['front tyre', 'front tire'],
+    id: 'stem_fl', x: 244, y: 114, icon: 'ski', label: 'Fork', category: 'suspension',
+    keywords: ['fork', 'suspension', 'shock'],
   },
   {
-    id: 'stem_rt', x: 379, y: 168, icon: 'tire', label: 'Tyre R', category: 'tyres',
+    id: 'r_end', x: 288, y: 108, icon: 'circle-double', label: 'Tubes', category: 'other',
+    keywords: ['inner tube', 'cleat', 'wheel bearing'],
+  },
+  {
+    id: 'stem_rt', x: 332, y: 102, icon: 'tire', label: 'Tyre R', category: 'tyres',
     keywords: ['rear tyre', 'rear tire'],
   },
 ];
@@ -252,7 +269,7 @@ function DashboardIcon({ slot, health, idx, svgScale, onPress }: IconProps) {
     transform: [{ scale: sc.value }],
   }));
 
-  const BOX = 34 * svgScale;
+  const BOX = 27 * svgScale;
   const ICO = Math.round(BOX * 0.64);
 
   return (
@@ -336,33 +353,30 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           <Path d={LEFT_HOOK} fill="none" stroke="#787d85" strokeWidth={2.5} opacity={0.35} strokeLinecap="round" transform="translate(-2,-3.5)" />
           <Path d={RIGHT_HOOK} fill="none" stroke="#787d85" strokeWidth={2.5} opacity={0.35} strokeLinecap="round" transform="translate(2,-3.5)" />
           {/* Angled tube openings at the hook tips */}
-          <Ellipse cx={20} cy={193} rx={6.5} ry={8.5} fill="#060708" transform="rotate(-12 20 193)" />
-          <Ellipse cx={20} cy={193} rx={6.5} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(-12 20 193)" />
-          <Ellipse cx={380} cy={193} rx={6.5} ry={8.5} fill="#060708" transform="rotate(12 380 193)" />
-          <Ellipse cx={380} cy={193} rx={6.5} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(12 380 193)" />
+          <Ellipse cx={18} cy={193} rx={6.5} ry={8.5} fill="#060708" transform="rotate(-12 18 193)" />
+          <Ellipse cx={18} cy={193} rx={6.5} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(-12 18 193)" />
+          <Ellipse cx={382} cy={193} rx={6.5} ry={8.5} fill="#060708" transform="rotate(12 382 193)" />
+          <Ellipse cx={382} cy={193} rx={6.5} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(12 382 193)" />
 
           {/* Stem + steerer (behind the wing so the junction is hidden) */}
           <Path d={STEM} fill="#17191d" stroke="#08090b" strokeWidth={0.8} />
           {/* Stem left-edge light catch */}
-          <Path d="M 181,126 C 180,144 182,160 185,172" fill="none" stroke="#41454c" strokeWidth={1.6} opacity={0.5} />
+          <Path d="M 183,138 C 182,154 184,164 186,174" fill="none" stroke="#41454c" strokeWidth={1.6} opacity={0.5} />
 
           {/* Wing: base, then a lighter top band for the top-lit surface */}
           <Path d={WING} fill="#141619" stroke="#08090b" strokeWidth={0.8} />
-          <Path
-            d="M 66,84 C 120,88 160,98 200,101 C 240,98 280,88 334,84 C 342,85 344,89 341,93 C 284,97 240,108 200,111 C 160,108 116,97 59,93 C 56,89 58,85 66,84 Z"
-            fill="#2e3238"
-          />
+          <Path d={WING_TOP_BAND} fill="#2e3238" />
           {/* Top-edge sheen */}
           <Path d={WING_SHEEN} fill="none" stroke="#9aa0a8" strokeWidth={1.6} opacity={0.5} strokeLinecap="round" />
           {/* Underside core shadow */}
-          <Path d="M 74,99 C 130,106 165,120 200,123 C 235,120 270,106 326,99" fill="none" stroke="#000000" strokeWidth={3} opacity={0.25} strokeLinecap="round" />
+          <Path d={WING_UNDER_SHADOW} fill="none" stroke="#000000" strokeWidth={3} opacity={0.25} strokeLinecap="round" />
           {/* Ambient shadow where the stem meets the wing */}
-          <Ellipse cx={200} cy={129} rx={26} ry={4.5} fill="#000000" opacity={0.25} />
+          <Ellipse cx={200} cy={141} rx={26} ry={4.5} fill="#000000" opacity={0.25} />
           {/* Recessed silver stem bolt */}
-          <Circle cx={200} cy={178} r={8} fill="#060708" />
-          <Circle cx={200} cy={178} r={5} fill="#b9bcc2" />
-          <Circle cx={198.5} cy={176.5} r={2.2} fill="#e8eaed" />
-          <Circle cx={200} cy={178} r={1.4} fill="#585c63" />
+          <Circle cx={200} cy={182} r={8} fill="#060708" />
+          <Circle cx={200} cy={182} r={5} fill="#b9bcc2" />
+          <Circle cx={198.5} cy={180.5} r={2.2} fill="#e8eaed" />
+          <Circle cx={200} cy={182} r={1.4} fill="#585c63" />
         </Svg>
 
         {/* Icon overlays (absolutely positioned over the SVG) */}
