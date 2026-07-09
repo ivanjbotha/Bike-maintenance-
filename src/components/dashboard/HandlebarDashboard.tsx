@@ -31,10 +31,10 @@ const WING =
   'M 62,72 ' +
   'C 120,75 160,79 200,81 ' +
   'C 240,79 280,75 338,72 ' +
-  'C 347,73 350,86 344,116 ' +
-  'C 286,124 242,129 200,131 ' +
-  'C 158,129 114,124 56,116 ' +
-  'C 50,86 53,73 62,72 Z';
+  'C 347,73 350,88 344,120 ' +
+  'C 286,128 242,133 200,135 ' +
+  'C 158,133 114,128 56,120 ' +
+  'C 50,88 53,73 62,72 Z';
 
 // Lighter top surface band of the wing (top-lit)
 const WING_TOP_BAND =
@@ -47,23 +47,51 @@ const WING_TOP_BAND =
   'C 53,77 55,73 62,72 Z';
 
 const WING_SHEEN = 'M 70,75 C 128,78 164,81 200,83 C 236,81 272,78 330,75';
-const WING_UNDER_SHADOW = 'M 72,114 C 130,120 165,126 200,128 C 235,126 270,120 328,114';
+const WING_UNDER_SHADOW = 'M 72,118 C 130,124 165,130 200,132 C 235,130 270,124 328,118';
 
-// Hook centrelines (drawn as thick round-capped strokes). The join to the
-// wing hides under the wing ends; the curl apex rises above the wing.
-const LEFT_HOOK =
-  'M 76,98 C 56,94 40,82 38,66 C 36,50 16,52 14,68 C 11,88 12,118 16,142 C 19,162 20,178 18,192';
-const RIGHT_HOOK =
-  'M 324,98 C 344,94 360,82 362,66 C 364,50 384,52 386,68 C 389,88 388,118 384,142 C 381,162 380,178 382,192';
+// Hooks drawn as closed tapered solids: they inherit most of the wing-end
+// depth at the shoulder (hidden behind the wing) and narrow continuously
+// through the curl down to the round tube ends - no constant-width tube
+// butting into a deep wing.
+const LEFT_HOOK_FILL =
+  'M 72,76 ' +
+  'C 50,70 32,62 24,52 ' +
+  'C 10,52 4,62 4,76 ' +
+  'C 2,98 3,128 8,154 ' +
+  'C 10,170 12,182 13,192 ' +
+  'C 14,201 26,201 27,192 ' +
+  'C 28,180 27,164 24,148 ' +
+  'C 21,124 21,100 24,84 ' +
+  'C 26,74 30,68 36,66 ' +
+  'C 48,66 62,72 72,80 ' +
+  'C 74,88 74,98 72,106 Z';
+const RIGHT_HOOK_FILL =
+  'M 328,76 ' +
+  'C 350,70 368,62 376,52 ' +
+  'C 390,52 396,62 396,76 ' +
+  'C 398,98 397,128 392,154 ' +
+  'C 390,170 388,182 387,192 ' +
+  'C 386,201 374,201 373,192 ' +
+  'C 372,180 373,164 376,148 ' +
+  'C 379,124 379,100 376,84 ' +
+  'C 374,74 370,68 364,66 ' +
+  'C 352,66 338,72 328,80 ' +
+  'C 326,88 326,98 328,106 Z';
+
+// Light catch along each hook's outer edge
+const LEFT_HOOK_EDGE =
+  'M 66,74 C 46,68 30,60 22,54 C 10,56 7,64 7,76 C 5,98 6,128 11,154 C 13,168 15,180 16,190';
+const RIGHT_HOOK_EDGE =
+  'M 334,74 C 354,68 370,60 378,54 C 390,56 393,64 393,76 C 395,98 394,128 389,154 C 387,168 385,180 384,190';
 
 // Integrated stem: tapered body, cone step, then steerer column.
 const STEM =
-  'M 180,124 L 220,124 ' +
-  'C 219,146 217,160 214,172 L 216,176 ' +
+  'M 180,128 L 220,128 ' +
+  'C 219,148 217,162 214,172 L 216,176 ' +
   'C 213,188 211,192 208,194 L 207,214 ' +
   'C 205,218 195,218 193,214 L 192,194 ' +
   'C 189,192 187,188 184,176 L 186,172 ' +
-  'C 183,160 181,146 180,124 Z';
+  'C 183,162 181,148 180,128 Z';
 
 const PANEL_BG = '#eef0f3';
 
@@ -83,64 +111,64 @@ type SlotDef = {
 const SLOTS: SlotDef[] = [
   // ── Row 1 ──
   {
-    id: 'l_end', x: 68, y: 84, icon: 'bandage', label: 'Bar Tape', category: 'other',
+    id: 'l_end', x: 80, y: 87, icon: 'bandage', label: 'Bar Tape', category: 'other',
     keywords: ['bar tape', 'grip'],
   },
   {
-    id: 'l_br', x: 112, y: 86, icon: 'hand-back-left', label: 'Brake F', category: 'brakes',
+    id: 'l_br', x: 120, y: 89, icon: 'hand-back-left', label: 'Brake F', category: 'brakes',
     keywords: ['brake pad (rim)', 'brake pad (disc)', 'brake cable (front)', 'front brake'],
   },
   {
-    id: 'l_ca', x: 156, y: 88, icon: 'cable-data', label: 'Cables', category: 'cables',
+    id: 'l_ca', x: 160, y: 91.5, icon: 'cable-data', label: 'Cables', category: 'cables',
     keywords: ['front derailleur', 'gear cable'],
   },
   {
     // Listed before the chain slot so "Chainring" (which contains "chain")
     // is claimed by its own slot first. Array order sets match priority;
     // x/y alone set where a slot renders.
-    id: 'l_cr', x: 112, y: 108, icon: 'cog-outline', label: 'Chainring', category: 'drivetrain',
+    id: 'l_cr', x: 120, y: 110.5, icon: 'cog-outline', label: 'Chainring', category: 'drivetrain',
     keywords: ['chainring'],
   },
   {
-    id: 'chain', x: 200, y: 90, icon: 'link-variant', label: 'Chain', category: 'drivetrain',
+    id: 'chain', x: 200, y: 93, icon: 'link-variant', label: 'Chain', category: 'drivetrain',
     keywords: ['chain'],
   },
   {
-    id: 'cass', x: 244, y: 88, icon: 'cog', label: 'Cassette', category: 'drivetrain',
+    id: 'cass', x: 240, y: 91.5, icon: 'cog', label: 'Cassette', category: 'drivetrain',
     keywords: ['cassette'],
   },
   {
-    id: 'r_ca', x: 288, y: 86, icon: 'cable-data', label: 'Cables', category: 'cables',
+    id: 'r_ca', x: 280, y: 89, icon: 'cable-data', label: 'Cables', category: 'cables',
     keywords: ['rear derailleur', 'brake cable (rear)'],
   },
   {
-    id: 'r_br', x: 332, y: 84, icon: 'disc', label: 'Brake R', category: 'brakes',
+    id: 'r_br', x: 320, y: 87, icon: 'disc', label: 'Brake R', category: 'brakes',
     keywords: ['brake rotor', 'brake pad', 'brake cable'],
   },
   // ── Row 2 ──
   {
-    id: 'stem_ft', x: 68, y: 106, icon: 'tire', label: 'Tyre F', category: 'tyres',
+    id: 'stem_ft', x: 80, y: 108, icon: 'tire', label: 'Tyre F', category: 'tyres',
     keywords: ['front tyre', 'front tire'],
   },
   {
-    id: 'stem_bb', x: 156, y: 110, icon: 'axis-z-rotate-clockwise', label: 'Bottom Bracket',
+    id: 'stem_bb', x: 160, y: 113.5, icon: 'axis-z-rotate-clockwise', label: 'Bottom Bracket',
     category: 'drivetrain',
     keywords: ['bottom bracket', 'headset', 'general service'],
   },
   {
-    id: 'stem_sv', x: 200, y: 112, icon: 'wrench', label: 'Service', category: 'other',
+    id: 'stem_sv', x: 200, y: 115.5, icon: 'wrench', label: 'Service', category: 'other',
     keywords: ['service', 'general', 'bearing'],
   },
   {
-    id: 'stem_fl', x: 244, y: 110, icon: 'ski', label: 'Fork', category: 'suspension',
+    id: 'stem_fl', x: 240, y: 113.5, icon: 'ski', label: 'Fork', category: 'suspension',
     keywords: ['fork', 'suspension', 'shock'],
   },
   {
-    id: 'r_end', x: 288, y: 108, icon: 'circle-double', label: 'Tubes', category: 'other',
+    id: 'r_end', x: 280, y: 110.5, icon: 'circle-double', label: 'Tubes', category: 'other',
     keywords: ['inner tube', 'cleat', 'wheel bearing'],
   },
   {
-    id: 'stem_rt', x: 332, y: 106, icon: 'tire', label: 'Tyre R', category: 'tyres',
+    id: 'stem_rt', x: 320, y: 108, icon: 'tire', label: 'Tyre R', category: 'tyres',
     keywords: ['rear tyre', 'rear tire'],
   },
 ];
@@ -269,7 +297,7 @@ function DashboardIcon({ slot, health, idx, svgScale, onPress }: IconProps) {
     transform: [{ scale: sc.value }],
   }));
 
-  const BOX = 27 * svgScale;
+  const BOX = 26 * svgScale;
   const ICO = Math.round(BOX * 0.64);
 
   return (
@@ -345,23 +373,24 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           <Ellipse cx={200} cy={234} rx={80} ry={6} fill="#000000" opacity={0.06} />
           <Ellipse cx={200} cy={232} rx={30} ry={5} fill="#000000" opacity={0.1} />
 
-          {/* Drop hooks: concentric strokes fake a top-lit cylinder */}
-          <Path d={LEFT_HOOK} fill="none" stroke="#101215" strokeWidth={14.5} strokeLinecap="round" />
-          <Path d={RIGHT_HOOK} fill="none" stroke="#101215" strokeWidth={14.5} strokeLinecap="round" />
-          <Path d={LEFT_HOOK} fill="none" stroke="#26292e" strokeWidth={8} strokeLinecap="round" transform="translate(-1,-2)" />
-          <Path d={RIGHT_HOOK} fill="none" stroke="#26292e" strokeWidth={8} strokeLinecap="round" transform="translate(1,-2)" />
-          <Path d={LEFT_HOOK} fill="none" stroke="#787d85" strokeWidth={2.5} opacity={0.35} strokeLinecap="round" transform="translate(-2,-3.5)" />
-          <Path d={RIGHT_HOOK} fill="none" stroke="#787d85" strokeWidth={2.5} opacity={0.35} strokeLinecap="round" transform="translate(2,-3.5)" />
+          {/* Drop hooks: tapered solids flowing out of the wing ends */}
+          <Path d={LEFT_HOOK_FILL} fill="#111316" stroke="#08090b" strokeWidth={0.8} />
+          <Path d={RIGHT_HOOK_FILL} fill="#111316" stroke="#08090b" strokeWidth={0.8} />
+          {/* Mid-tone body + outer-edge light catch for a round-tube read */}
+          <Path d={LEFT_HOOK_EDGE} fill="none" stroke="#26292e" strokeWidth={5} opacity={0.8} strokeLinecap="round" />
+          <Path d={RIGHT_HOOK_EDGE} fill="none" stroke="#26292e" strokeWidth={5} opacity={0.8} strokeLinecap="round" />
+          <Path d={LEFT_HOOK_EDGE} fill="none" stroke="#787d85" strokeWidth={1.8} opacity={0.4} strokeLinecap="round" />
+          <Path d={RIGHT_HOOK_EDGE} fill="none" stroke="#787d85" strokeWidth={1.8} opacity={0.4} strokeLinecap="round" />
           {/* Angled tube openings at the hook tips */}
-          <Ellipse cx={18} cy={193} rx={6.5} ry={8.5} fill="#060708" transform="rotate(-12 18 193)" />
-          <Ellipse cx={18} cy={193} rx={6.5} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(-12 18 193)" />
-          <Ellipse cx={382} cy={193} rx={6.5} ry={8.5} fill="#060708" transform="rotate(12 382 193)" />
-          <Ellipse cx={382} cy={193} rx={6.5} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(12 382 193)" />
+          <Ellipse cx={20} cy={194} rx={7} ry={8.5} fill="#060708" transform="rotate(-10 20 194)" />
+          <Ellipse cx={20} cy={194} rx={7} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(-10 20 194)" />
+          <Ellipse cx={380} cy={194} rx={7} ry={8.5} fill="#060708" transform="rotate(10 380 194)" />
+          <Ellipse cx={380} cy={194} rx={7} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(10 380 194)" />
 
           {/* Stem + steerer (behind the wing so the junction is hidden) */}
           <Path d={STEM} fill="#17191d" stroke="#08090b" strokeWidth={0.8} />
           {/* Stem left-edge light catch */}
-          <Path d="M 183,132 C 182,148 184,160 186,172" fill="none" stroke="#41454c" strokeWidth={1.6} opacity={0.5} />
+          <Path d="M 183,136 C 182,150 184,162 186,172" fill="none" stroke="#41454c" strokeWidth={1.6} opacity={0.5} />
 
           {/* Wing: base, then a lighter top band for the top-lit surface */}
           <Path d={WING} fill="#141619" stroke="#08090b" strokeWidth={0.8} />
@@ -371,7 +400,7 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           {/* Underside core shadow */}
           <Path d={WING_UNDER_SHADOW} fill="none" stroke="#000000" strokeWidth={3} opacity={0.25} strokeLinecap="round" />
           {/* Ambient shadow where the stem meets the wing */}
-          <Ellipse cx={200} cy={134} rx={26} ry={4.5} fill="#000000" opacity={0.25} />
+          <Ellipse cx={200} cy={138} rx={26} ry={4.5} fill="#000000" opacity={0.25} />
           {/* Recessed silver stem bolt */}
           <Circle cx={200} cy={182} r={8} fill="#060708" />
           <Circle cx={200} cy={182} r={5} fill="#b9bcc2" />
