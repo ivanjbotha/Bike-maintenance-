@@ -49,40 +49,40 @@ const WING_TOP_BAND =
 const WING_SHEEN = 'M 70,75 C 128,78 164,81 200,83 C 236,81 272,78 330,75';
 const WING_UNDER_SHADOW = 'M 72,118 C 130,124 165,130 200,132 C 235,130 270,124 328,118';
 
-// Hooks drawn as closed tapered solids: they inherit most of the wing-end
-// depth at the shoulder (hidden behind the wing) and narrow continuously
-// through the curl down to the round tube ends - no constant-width tube
-// butting into a deep wing.
+// Hooks drawn as closed solids whose top edge leaves the wing's top edge
+// tangentially (shallow slope at the seam, steepening outboard) and rolls
+// over a wide rounded shoulder into the drop. The inner edge climbs back
+// as a concave cove and tucks behind the wing's outer edge, so the
+// tops-to-drops transition reads as one continuously moulded surface with
+// no thin neck or notch at the junction.
 const LEFT_HOOK_FILL =
-  'M 72,76 ' +
-  'C 50,70 32,62 24,52 ' +
-  'C 10,52 4,62 4,76 ' +
-  'C 2,98 3,128 8,154 ' +
-  'C 10,170 12,182 13,192 ' +
-  'C 14,201 26,201 27,192 ' +
-  'C 28,180 27,164 24,148 ' +
-  'C 21,124 21,100 24,84 ' +
-  'C 26,74 30,68 36,66 ' +
-  'C 48,66 62,72 72,80 ' +
-  'C 74,88 74,98 72,106 Z';
+  'M 84,77 ' +
+  'C 62,73.5 47,69.5 36,63 ' +
+  'C 24,56.5 12,60 10,74 ' +
+  'C 7,96 8,128 13,155 ' +
+  'C 15,170 16,182 16.5,190 ' +
+  'C 17,199 27,199 27.5,191 ' +
+  'C 28.5,176 27.5,160 26,146 ' +
+  'C 24.5,132 26,116 33,108 ' +
+  'C 39,101 48,101 54,108 ' +
+  'C 61,116 72,90 84,77 Z';
 const RIGHT_HOOK_FILL =
-  'M 328,76 ' +
-  'C 350,70 368,62 376,52 ' +
-  'C 390,52 396,62 396,76 ' +
-  'C 398,98 397,128 392,154 ' +
-  'C 390,170 388,182 387,192 ' +
-  'C 386,201 374,201 373,192 ' +
-  'C 372,180 373,164 376,148 ' +
-  'C 379,124 379,100 376,84 ' +
-  'C 374,74 370,68 364,66 ' +
-  'C 352,66 338,72 328,80 ' +
-  'C 326,88 326,98 328,106 Z';
+  'M 316,77 ' +
+  'C 338,73.5 353,69.5 364,63 ' +
+  'C 376,56.5 388,60 390,74 ' +
+  'C 393,96 392,128 387,155 ' +
+  'C 385,170 384,182 383.5,190 ' +
+  'C 383,199 373,199 372.5,191 ' +
+  'C 371.5,176 372.5,160 374,146 ' +
+  'C 375.5,132 374,116 367,108 ' +
+  'C 361,101 352,101 346,108 ' +
+  'C 339,116 328,90 316,77 Z';
 
 // Light catch along each hook's outer edge
 const LEFT_HOOK_EDGE =
-  'M 66,74 C 46,68 30,60 22,54 C 10,56 7,64 7,76 C 5,98 6,128 11,154 C 13,168 15,180 16,190';
+  'M 66,74 C 50,70.5 38,66 30,61 C 20,56.5 13,61 11,75 C 9,96 10,128 14,154 C 16,168 17,180 17.5,188';
 const RIGHT_HOOK_EDGE =
-  'M 334,74 C 354,68 370,60 378,54 C 390,56 393,64 393,76 C 395,98 394,128 389,154 C 387,168 385,180 384,190';
+  'M 334,74 C 350,70.5 362,66 370,61 C 380,56.5 387,61 389,75 C 391,96 390,128 386,154 C 384,168 383,180 382.5,188';
 
 // Integrated stem: tapered body, cone step, then steerer column.
 const STEM =
@@ -382,10 +382,10 @@ export function HandlebarDashboard({ partsHealth, onIconPress }: Props) {
           <Path d={LEFT_HOOK_EDGE} fill="none" stroke="#787d85" strokeWidth={1.8} opacity={0.4} strokeLinecap="round" />
           <Path d={RIGHT_HOOK_EDGE} fill="none" stroke="#787d85" strokeWidth={1.8} opacity={0.4} strokeLinecap="round" />
           {/* Angled tube openings at the hook tips */}
-          <Ellipse cx={20} cy={194} rx={7} ry={8.5} fill="#060708" transform="rotate(-10 20 194)" />
-          <Ellipse cx={20} cy={194} rx={7} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(-10 20 194)" />
-          <Ellipse cx={380} cy={194} rx={7} ry={8.5} fill="#060708" transform="rotate(10 380 194)" />
-          <Ellipse cx={380} cy={194} rx={7} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(10 380 194)" />
+          <Ellipse cx={21.5} cy={193} rx={7} ry={8.5} fill="#060708" transform="rotate(-10 21.5 193)" />
+          <Ellipse cx={21.5} cy={193} rx={7} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(-10 21.5 193)" />
+          <Ellipse cx={378.5} cy={193} rx={7} ry={8.5} fill="#060708" transform="rotate(10 378.5 193)" />
+          <Ellipse cx={378.5} cy={193} rx={7} ry={8.5} fill="none" stroke="#565b62" strokeWidth={0.8} opacity={0.7} transform="rotate(10 378.5 193)" />
 
           {/* Stem + steerer (behind the wing so the junction is hidden) */}
           <Path d={STEM} fill="#17191d" stroke="#08090b" strokeWidth={0.8} />
